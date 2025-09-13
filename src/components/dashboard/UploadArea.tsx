@@ -3,19 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Upload, 
-  File, 
-  CheckCircle, 
-  AlertCircle, 
-  X, 
+import {
+  Upload,
+  File,
+  CheckCircle,
+  AlertCircle,
+  X,
   Brain,
   FileImage,
-  Database
+  Database,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface UploadFile {
   id: string;
@@ -23,7 +23,7 @@ interface UploadFile {
   size: number;
   type: string;
   progress: number;
-  status: 'uploading' | 'completed' | 'error';
+  status: "uploading" | "completed" | "error";
 }
 
 export const UploadArea = () => {
@@ -32,26 +32,79 @@ export const UploadArea = () => {
   const { user } = useAuth();
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    if (extension === 'nii' || extension === 'gz') {
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    if (extension === "nii" || extension === "gz") {
       return <Brain className="h-5 w-5 text-primary" />;
     }
-    if (extension === 'dcm' || extension === 'dicom') {
+    if (extension === "dcm" || extension === "dicom") {
       return <FileImage className="h-5 w-5 text-accent" />;
     }
     return <File className="h-5 w-5 text-muted-foreground" />;
   };
 
+  // Parse a BIDS filename and return a storage path segment like: "sub-123[/ses-01]/<modality>"
+  function bidsPathFromName(name: string): {
+    subject: string;
+    session?: string;
+    modality: string;
+  } {
+    const base = name.toLowerCase();
+
+    // subject (required)
+    const subject = (base.match(/\bsub-[a-z0-9]+/i) || [])[0];
+    if (!subject)
+      throw new Error("Filename missing BIDS subject (e.g., sub-10159).");
+
+    // session (optional)
+    const session = (base.match(/\bses-[a-z0-9]+/i) || [])[0];
+
+    // determine modality by common BIDS tokens (order matters)
+    const rules: Array<{ re: RegExp; modality: string }> = [
+      // functional MRI
+      { re: /(_task-|_bold|_timeseries|_sbref)/i, modality: "func" },
+      // structural/anatomical
+      { re: /(_t1w|_t2w|_flair|_pd|_t2star|_mprage|_spgr)/i, modality: "anat" },
+      // diffusion
+      { re: /(_dwi|_adc|_fa)/i, modality: "dwi" },
+      // field maps
+      { re: /(_phasediff|_magnitude[12]?|_fieldmap|_epi)/i, modality: "fmap" },
+      // electrophys (just in case)
+      { re: /(_eeg|_ieeg|_meg)/i, modality: "eeg" },
+    ];
+
+    let modality = "misc";
+    for (const r of rules) {
+      if (r.re.test(base)) {
+        modality = r.modality;
+        break;
+      }
+    }
+
+    // extra nudge for .h5 timeseries
+    if (modality === "misc" && /\.h5$/.test(base) && /(bold|timeseries)/i.test(base)) {
+      modality = "func";
+    }
+
+    return { subject, session, modality };
+  }
+
   const uploadToSupabase = async (file: UploadFile, actualFile: File) => {
-    if (!user) {
+    const { data: sessData, error: sessErr } = await supabase.auth.getSession();
+    const uid = user?.id ?? sessData?.session?.user?.id;
+
+    if (sessErr) {
+      console.error("getSession error:", sessErr);
+    }
+
+    if (!uid) {
       toast({
         title: "Authentication Required",
         description: "Please log in to upload files.",
@@ -60,101 +113,97 @@ export const UploadArea = () => {
       return;
     }
 
-    const filePath = `${user.id}/${file.name}`;
-    
+    // 🔎 Build BIDS path
+    let key: string;
     try {
-      setFiles(prev => prev.map(f => 
-        f.id === file.id ? { ...f, progress: 10 } : f
-      ));
+      const { subject, session, modality } = bidsPathFromName(file.name);
+      const dir = session ? `${subject}/${session}/${modality}` : `${subject}/${modality}`;
+      key = `${uid}/${dir}/${file.name}`; // no leading slash
+    } catch {
+      // If not BIDS: put in a safe fallback bucket path
+      key = `${uid}/misc/${file.name}`;
+    }
+
+    try {
+      setFiles((prev) =>
+        prev.map((f) => (f.id === file.id ? { ...f, progress: 10 } : f))
+      );
 
       const { error: uploadError } = await supabase.storage
-        .from('fmri-data')
-        .upload(filePath, actualFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .from("fmri-data")
+        .upload(key, actualFile, { cacheControl: "3600", upsert: true });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      setFiles(prev => prev.map(f => 
-        f.id === file.id 
-          ? { ...f, progress: 100, status: 'completed' } 
-          : f
-      ));
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === file.id ? { ...f, progress: 100, status: "completed" } : f
+        )
+      );
 
       toast({
         title: "Upload Completed",
-        description: `${file.name} has been successfully uploaded to your fMRI data storage.`,
+        description: `${file.name} uploaded to ${key}`,
       });
-
     } catch (error) {
-      console.error('Upload error:', error);
-      setFiles(prev => prev.map(f => 
-        f.id === file.id 
-          ? { ...f, status: 'error' } 
-          : f
-      ));
-
+      console.error("Upload error:", error);
+      setFiles((prev) =>
+        prev.map((f) => (f.id === file.id ? { ...f, status: "error" } : f))
+      );
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Failed to upload file. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to upload. Check filename or policies.",
         variant: "destructive",
       });
     }
   };
 
-  const handleFileSelect = (selectedFiles: FileList) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to upload files.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  // Make this stable so drop uses the fresh one without stale user checks
+  const handleFileSelect = useCallback((selectedFiles: FileList) => {
     const fileArray = Array.from(selectedFiles);
-    const newFiles: UploadFile[] = fileArray.map(file => ({
+    const newFiles: UploadFile[] = fileArray.map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       size: file.size,
       type: file.type,
       progress: 0,
-      status: 'uploading' as const,
+      status: "uploading" as const,
     }));
 
-    setFiles(prev => [...prev, ...newFiles]);
-    
+    setFiles((prev) => [...prev, ...newFiles]);
+
     // Start real upload for each file
     newFiles.forEach((uploadFile, index) => {
       uploadToSupabase(uploadFile, fileArray[index]);
     });
-  };
+  }, []); // no user dependency → no stale auth gating
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
-    
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length > 0) {
       handleFileSelect(droppedFiles);
     }
-  }, []);
+  }, [handleFileSelect]);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    // nicer cursor hint
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
     setIsDragOver(true);
   }, []);
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
   }, []);
 
   const removeFile = (id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id));
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   return (
@@ -162,9 +211,9 @@ export const UploadArea = () => {
       {/* Drop Zone */}
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragOver 
-            ? 'border-primary bg-primary/5' 
-            : 'border-border hover:border-primary/50'
+          isDragOver
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/50"
         }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -174,7 +223,7 @@ export const UploadArea = () => {
           <div className="p-3 bg-primary/10 rounded-full">
             <Upload className="h-8 w-8 text-primary" />
           </div>
-          
+
           <div>
             <h3 className="text-lg font-semibold">Drop your fMRI files here</h3>
             <p className="text-muted-foreground mt-1">
@@ -191,10 +240,21 @@ export const UploadArea = () => {
 
           <Button
             onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
+              const input = document.createElement("input");
+              input.type = "file";
               input.multiple = true;
-              input.accept = '.nii,.nii.gz,.dcm,.dicom';
+              input.accept = [
+                ".nii",
+                ".nii.gz",
+                ".gz",
+                ".dcm",
+                ".dicom",
+                ".h5",
+                ".hdf5",
+                "application/gzip",
+                "application/x-hdf5",
+                "application/octet-stream",
+              ].join(",");
               input.onchange = (e) => {
                 const target = e.target as HTMLInputElement;
                 if (target.files) {
@@ -218,14 +278,14 @@ export const UploadArea = () => {
             <Database className="h-4 w-4" />
             Upload Progress
           </h4>
-          
+
           {files.map((file) => (
             <Card key={file.id} className="bg-background/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {getFileIcon(file.name)}
-                    
+
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{file.name}</p>
                       <p className="text-sm text-muted-foreground">
@@ -234,18 +294,18 @@ export const UploadArea = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {file.status === 'completed' && (
+                      {file.status === "completed" && (
                         <CheckCircle className="h-5 w-5 text-green-500" />
                       )}
-                      {file.status === 'error' && (
+                      {file.status === "error" && (
                         <AlertCircle className="h-5 w-5 text-destructive" />
                       )}
-                      {file.status === 'uploading' && (
+                      {file.status === "uploading" && (
                         <div className="w-16">
                           <Progress value={file.progress} className="h-2" />
                         </div>
                       )}
-                      
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -256,8 +316,8 @@ export const UploadArea = () => {
                     </div>
                   </div>
                 </div>
-                
-                {file.status === 'uploading' && (
+
+                {file.status === "uploading" && (
                   <div className="mt-2">
                     <Progress value={file.progress} className="h-1" />
                     <p className="text-xs text-muted-foreground mt-1">
