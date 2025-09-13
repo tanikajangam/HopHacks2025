@@ -1,0 +1,16 @@
+{
+  "n_frames": 267,
+  "dims": [
+    64,
+    64,
+    34
+  ],
+  "dtype": "uint8",
+  "mode": "psc",
+  "clamp": [
+    -5.0,
+    5.0
+  ],
+  "downsample": 1,
+  "tr_seconds": 2.0
+}
