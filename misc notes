@@ -7,6 +7,7 @@ file --> build settings --> refresh --> meta quest or whatever
   
 THE MAIN ISSUE its architecture (meta quest does NOT support ARMx7 architecture it only does ARM64)
 so go to file --> build settings --> player settings --> other settings tab --> configuration --> scripting backend --> change from mono to IL2CPP
+uncheck ARMx7 and check ARM64 
 hopefully it works !!!!!
 
 i dunno this is just my own documentation of issues i ran into
