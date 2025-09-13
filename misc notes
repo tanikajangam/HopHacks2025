@@ -10,4 +10,6 @@ so go to file --> build settings --> player settings --> other settings tab --> 
 uncheck ARMx7 and check ARM64 
 hopefully it works !!!!!
 
+also dont forget to turn off the xr simulator thing so that you can actually move and whatnot
+
 i dunno this is just my own documentation of issues i ran into
