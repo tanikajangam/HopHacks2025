@@ -4,3 +4,4 @@
 # Except .gitignore and .cs files
 !.gitignore
 !*.cs
+!*.json
