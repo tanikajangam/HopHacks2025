@@ -1,0 +1,1105 @@
+{
+  "dims": {
+    "x": 56,
+    "y": 68,
+    "z": 37
+  },
+  "voxel_size_mm": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "timepoints": 267,
+  "tr_seconds": 2.0,
+  "format": "R8",
+  "byte_order": "x_fastest",
+  "anatomy": {
+    "file": "anatomy_mean.vol",
+    "desc": "time-mean of normalized BOLD [0..255]"
+  },
+  "psc": {
+    "enabled": true,
+    "range_percent": 5.0,
+    "frames": [
+      {
+        "file": "psc_0000.vol",
+        "t": 0
+      },
+      {
+        "file": "psc_0001.vol",
+        "t": 1
+      },
+      {
+        "file": "psc_0002.vol",
+        "t": 2
+      },
+      {
+        "file": "psc_0003.vol",
+        "t": 3
+      },
+      {
+        "file": "psc_0004.vol",
+        "t": 4
+      },
+      {
+        "file": "psc_0005.vol",
+        "t": 5
+      },
+      {
+        "file": "psc_0006.vol",
+        "t": 6
+      },
+      {
+        "file": "psc_0007.vol",
+        "t": 7
+      },
+      {
+        "file": "psc_0008.vol",
+        "t": 8
+      },
+      {
+        "file": "psc_0009.vol",
+        "t": 9
+      },
+      {
+        "file": "psc_0010.vol",
+        "t": 10
+      },
+      {
+        "file": "psc_0011.vol",
+        "t": 11
+      },
+      {
+        "file": "psc_0012.vol",
+        "t": 12
+      },
+      {
+        "file": "psc_0013.vol",
+        "t": 13
+      },
+      {
+        "file": "psc_0014.vol",
+        "t": 14
+      },
+      {
+        "file": "psc_0015.vol",
+        "t": 15
+      },
+      {
+        "file": "psc_0016.vol",
+        "t": 16
+      },
+      {
+        "file": "psc_0017.vol",
+        "t": 17
+      },
+      {
+        "file": "psc_0018.vol",
+        "t": 18
+      },
+      {
+        "file": "psc_0019.vol",
+        "t": 19
+      },
+      {
+        "file": "psc_0020.vol",
+        "t": 20
+      },
+      {
+        "file": "psc_0021.vol",
+        "t": 21
+      },
+      {
+        "file": "psc_0022.vol",
+        "t": 22
+      },
+      {
+        "file": "psc_0023.vol",
+        "t": 23
+      },
+      {
+        "file": "psc_0024.vol",
+        "t": 24
+      },
+      {
+        "file": "psc_0025.vol",
+        "t": 25
+      },
+      {
+        "file": "psc_0026.vol",
+        "t": 26
+      },
+      {
+        "file": "psc_0027.vol",
+        "t": 27
+      },
+      {
+        "file": "psc_0028.vol",
+        "t": 28
+      },
+      {
+        "file": "psc_0029.vol",
+        "t": 29
+      },
+      {
+        "file": "psc_0030.vol",
+        "t": 30
+      },
+      {
+        "file": "psc_0031.vol",
+        "t": 31
+      },
+      {
+        "file": "psc_0032.vol",
+        "t": 32
+      },
+      {
+        "file": "psc_0033.vol",
+        "t": 33
+      },
+      {
+        "file": "psc_0034.vol",
+        "t": 34
+      },
+      {
+        "file": "psc_0035.vol",
+        "t": 35
+      },
+      {
+        "file": "psc_0036.vol",
+        "t": 36
+      },
+      {
+        "file": "psc_0037.vol",
+        "t": 37
+      },
+      {
+        "file": "psc_0038.vol",
+        "t": 38
+      },
+      {
+        "file": "psc_0039.vol",
+        "t": 39
+      },
+      {
+        "file": "psc_0040.vol",
+        "t": 40
+      },
+      {
+        "file": "psc_0041.vol",
+        "t": 41
+      },
+      {
+        "file": "psc_0042.vol",
+        "t": 42
+      },
+      {
+        "file": "psc_0043.vol",
+        "t": 43
+      },
+      {
+        "file": "psc_0044.vol",
+        "t": 44
+      },
+      {
+        "file": "psc_0045.vol",
+        "t": 45
+      },
+      {
+        "file": "psc_0046.vol",
+        "t": 46
+      },
+      {
+        "file": "psc_0047.vol",
+        "t": 47
+      },
+      {
+        "file": "psc_0048.vol",
+        "t": 48
+      },
+      {
+        "file": "psc_0049.vol",
+        "t": 49
+      },
+      {
+        "file": "psc_0050.vol",
+        "t": 50
+      },
+      {
+        "file": "psc_0051.vol",
+        "t": 51
+      },
+      {
+        "file": "psc_0052.vol",
+        "t": 52
+      },
+      {
+        "file": "psc_0053.vol",
+        "t": 53
+      },
+      {
+        "file": "psc_0054.vol",
+        "t": 54
+      },
+      {
+        "file": "psc_0055.vol",
+        "t": 55
+      },
+      {
+        "file": "psc_0056.vol",
+        "t": 56
+      },
+      {
+        "file": "psc_0057.vol",
+        "t": 57
+      },
+      {
+        "file": "psc_0058.vol",
+        "t": 58
+      },
+      {
+        "file": "psc_0059.vol",
+        "t": 59
+      },
+      {
+        "file": "psc_0060.vol",
+        "t": 60
+      },
+      {
+        "file": "psc_0061.vol",
+        "t": 61
+      },
+      {
+        "file": "psc_0062.vol",
+        "t": 62
+      },
+      {
+        "file": "psc_0063.vol",
+        "t": 63
+      },
+      {
+        "file": "psc_0064.vol",
+        "t": 64
+      },
+      {
+        "file": "psc_0065.vol",
+        "t": 65
+      },
+      {
+        "file": "psc_0066.vol",
+        "t": 66
+      },
+      {
+        "file": "psc_0067.vol",
+        "t": 67
+      },
+      {
+        "file": "psc_0068.vol",
+        "t": 68
+      },
+      {
+        "file": "psc_0069.vol",
+        "t": 69
+      },
+      {
+        "file": "psc_0070.vol",
+        "t": 70
+      },
+      {
+        "file": "psc_0071.vol",
+        "t": 71
+      },
+      {
+        "file": "psc_0072.vol",
+        "t": 72
+      },
+      {
+        "file": "psc_0073.vol",
+        "t": 73
+      },
+      {
+        "file": "psc_0074.vol",
+        "t": 74
+      },
+      {
+        "file": "psc_0075.vol",
+        "t": 75
+      },
+      {
+        "file": "psc_0076.vol",
+        "t": 76
+      },
+      {
+        "file": "psc_0077.vol",
+        "t": 77
+      },
+      {
+        "file": "psc_0078.vol",
+        "t": 78
+      },
+      {
+        "file": "psc_0079.vol",
+        "t": 79
+      },
+      {
+        "file": "psc_0080.vol",
+        "t": 80
+      },
+      {
+        "file": "psc_0081.vol",
+        "t": 81
+      },
+      {
+        "file": "psc_0082.vol",
+        "t": 82
+      },
+      {
+        "file": "psc_0083.vol",
+        "t": 83
+      },
+      {
+        "file": "psc_0084.vol",
+        "t": 84
+      },
+      {
+        "file": "psc_0085.vol",
+        "t": 85
+      },
+      {
+        "file": "psc_0086.vol",
+        "t": 86
+      },
+      {
+        "file": "psc_0087.vol",
+        "t": 87
+      },
+      {
+        "file": "psc_0088.vol",
+        "t": 88
+      },
+      {
+        "file": "psc_0089.vol",
+        "t": 89
+      },
+      {
+        "file": "psc_0090.vol",
+        "t": 90
+      },
+      {
+        "file": "psc_0091.vol",
+        "t": 91
+      },
+      {
+        "file": "psc_0092.vol",
+        "t": 92
+      },
+      {
+        "file": "psc_0093.vol",
+        "t": 93
+      },
+      {
+        "file": "psc_0094.vol",
+        "t": 94
+      },
+      {
+        "file": "psc_0095.vol",
+        "t": 95
+      },
+      {
+        "file": "psc_0096.vol",
+        "t": 96
+      },
+      {
+        "file": "psc_0097.vol",
+        "t": 97
+      },
+      {
+        "file": "psc_0098.vol",
+        "t": 98
+      },
+      {
+        "file": "psc_0099.vol",
+        "t": 99
+      },
+      {
+        "file": "psc_0100.vol",
+        "t": 100
+      },
+      {
+        "file": "psc_0101.vol",
+        "t": 101
+      },
+      {
+        "file": "psc_0102.vol",
+        "t": 102
+      },
+      {
+        "file": "psc_0103.vol",
+        "t": 103
+      },
+      {
+        "file": "psc_0104.vol",
+        "t": 104
+      },
+      {
+        "file": "psc_0105.vol",
+        "t": 105
+      },
+      {
+        "file": "psc_0106.vol",
+        "t": 106
+      },
+      {
+        "file": "psc_0107.vol",
+        "t": 107
+      },
+      {
+        "file": "psc_0108.vol",
+        "t": 108
+      },
+      {
+        "file": "psc_0109.vol",
+        "t": 109
+      },
+      {
+        "file": "psc_0110.vol",
+        "t": 110
+      },
+      {
+        "file": "psc_0111.vol",
+        "t": 111
+      },
+      {
+        "file": "psc_0112.vol",
+        "t": 112
+      },
+      {
+        "file": "psc_0113.vol",
+        "t": 113
+      },
+      {
+        "file": "psc_0114.vol",
+        "t": 114
+      },
+      {
+        "file": "psc_0115.vol",
+        "t": 115
+      },
+      {
+        "file": "psc_0116.vol",
+        "t": 116
+      },
+      {
+        "file": "psc_0117.vol",
+        "t": 117
+      },
+      {
+        "file": "psc_0118.vol",
+        "t": 118
+      },
+      {
+        "file": "psc_0119.vol",
+        "t": 119
+      },
+      {
+        "file": "psc_0120.vol",
+        "t": 120
+      },
+      {
+        "file": "psc_0121.vol",
+        "t": 121
+      },
+      {
+        "file": "psc_0122.vol",
+        "t": 122
+      },
+      {
+        "file": "psc_0123.vol",
+        "t": 123
+      },
+      {
+        "file": "psc_0124.vol",
+        "t": 124
+      },
+      {
+        "file": "psc_0125.vol",
+        "t": 125
+      },
+      {
+        "file": "psc_0126.vol",
+        "t": 126
+      },
+      {
+        "file": "psc_0127.vol",
+        "t": 127
+      },
+      {
+        "file": "psc_0128.vol",
+        "t": 128
+      },
+      {
+        "file": "psc_0129.vol",
+        "t": 129
+      },
+      {
+        "file": "psc_0130.vol",
+        "t": 130
+      },
+      {
+        "file": "psc_0131.vol",
+        "t": 131
+      },
+      {
+        "file": "psc_0132.vol",
+        "t": 132
+      },
+      {
+        "file": "psc_0133.vol",
+        "t": 133
+      },
+      {
+        "file": "psc_0134.vol",
+        "t": 134
+      },
+      {
+        "file": "psc_0135.vol",
+        "t": 135
+      },
+      {
+        "file": "psc_0136.vol",
+        "t": 136
+      },
+      {
+        "file": "psc_0137.vol",
+        "t": 137
+      },
+      {
+        "file": "psc_0138.vol",
+        "t": 138
+      },
+      {
+        "file": "psc_0139.vol",
+        "t": 139
+      },
+      {
+        "file": "psc_0140.vol",
+        "t": 140
+      },
+      {
+        "file": "psc_0141.vol",
+        "t": 141
+      },
+      {
+        "file": "psc_0142.vol",
+        "t": 142
+      },
+      {
+        "file": "psc_0143.vol",
+        "t": 143
+      },
+      {
+        "file": "psc_0144.vol",
+        "t": 144
+      },
+      {
+        "file": "psc_0145.vol",
+        "t": 145
+      },
+      {
+        "file": "psc_0146.vol",
+        "t": 146
+      },
+      {
+        "file": "psc_0147.vol",
+        "t": 147
+      },
+      {
+        "file": "psc_0148.vol",
+        "t": 148
+      },
+      {
+        "file": "psc_0149.vol",
+        "t": 149
+      },
+      {
+        "file": "psc_0150.vol",
+        "t": 150
+      },
+      {
+        "file": "psc_0151.vol",
+        "t": 151
+      },
+      {
+        "file": "psc_0152.vol",
+        "t": 152
+      },
+      {
+        "file": "psc_0153.vol",
+        "t": 153
+      },
+      {
+        "file": "psc_0154.vol",
+        "t": 154
+      },
+      {
+        "file": "psc_0155.vol",
+        "t": 155
+      },
+      {
+        "file": "psc_0156.vol",
+        "t": 156
+      },
+      {
+        "file": "psc_0157.vol",
+        "t": 157
+      },
+      {
+        "file": "psc_0158.vol",
+        "t": 158
+      },
+      {
+        "file": "psc_0159.vol",
+        "t": 159
+      },
+      {
+        "file": "psc_0160.vol",
+        "t": 160
+      },
+      {
+        "file": "psc_0161.vol",
+        "t": 161
+      },
+      {
+        "file": "psc_0162.vol",
+        "t": 162
+      },
+      {
+        "file": "psc_0163.vol",
+        "t": 163
+      },
+      {
+        "file": "psc_0164.vol",
+        "t": 164
+      },
+      {
+        "file": "psc_0165.vol",
+        "t": 165
+      },
+      {
+        "file": "psc_0166.vol",
+        "t": 166
+      },
+      {
+        "file": "psc_0167.vol",
+        "t": 167
+      },
+      {
+        "file": "psc_0168.vol",
+        "t": 168
+      },
+      {
+        "file": "psc_0169.vol",
+        "t": 169
+      },
+      {
+        "file": "psc_0170.vol",
+        "t": 170
+      },
+      {
+        "file": "psc_0171.vol",
+        "t": 171
+      },
+      {
+        "file": "psc_0172.vol",
+        "t": 172
+      },
+      {
+        "file": "psc_0173.vol",
+        "t": 173
+      },
+      {
+        "file": "psc_0174.vol",
+        "t": 174
+      },
+      {
+        "file": "psc_0175.vol",
+        "t": 175
+      },
+      {
+        "file": "psc_0176.vol",
+        "t": 176
+      },
+      {
+        "file": "psc_0177.vol",
+        "t": 177
+      },
+      {
+        "file": "psc_0178.vol",
+        "t": 178
+      },
+      {
+        "file": "psc_0179.vol",
+        "t": 179
+      },
+      {
+        "file": "psc_0180.vol",
+        "t": 180
+      },
+      {
+        "file": "psc_0181.vol",
+        "t": 181
+      },
+      {
+        "file": "psc_0182.vol",
+        "t": 182
+      },
+      {
+        "file": "psc_0183.vol",
+        "t": 183
+      },
+      {
+        "file": "psc_0184.vol",
+        "t": 184
+      },
+      {
+        "file": "psc_0185.vol",
+        "t": 185
+      },
+      {
+        "file": "psc_0186.vol",
+        "t": 186
+      },
+      {
+        "file": "psc_0187.vol",
+        "t": 187
+      },
+      {
+        "file": "psc_0188.vol",
+        "t": 188
+      },
+      {
+        "file": "psc_0189.vol",
+        "t": 189
+      },
+      {
+        "file": "psc_0190.vol",
+        "t": 190
+      },
+      {
+        "file": "psc_0191.vol",
+        "t": 191
+      },
+      {
+        "file": "psc_0192.vol",
+        "t": 192
+      },
+      {
+        "file": "psc_0193.vol",
+        "t": 193
+      },
+      {
+        "file": "psc_0194.vol",
+        "t": 194
+      },
+      {
+        "file": "psc_0195.vol",
+        "t": 195
+      },
+      {
+        "file": "psc_0196.vol",
+        "t": 196
+      },
+      {
+        "file": "psc_0197.vol",
+        "t": 197
+      },
+      {
+        "file": "psc_0198.vol",
+        "t": 198
+      },
+      {
+        "file": "psc_0199.vol",
+        "t": 199
+      },
+      {
+        "file": "psc_0200.vol",
+        "t": 200
+      },
+      {
+        "file": "psc_0201.vol",
+        "t": 201
+      },
+      {
+        "file": "psc_0202.vol",
+        "t": 202
+      },
+      {
+        "file": "psc_0203.vol",
+        "t": 203
+      },
+      {
+        "file": "psc_0204.vol",
+        "t": 204
+      },
+      {
+        "file": "psc_0205.vol",
+        "t": 205
+      },
+      {
+        "file": "psc_0206.vol",
+        "t": 206
+      },
+      {
+        "file": "psc_0207.vol",
+        "t": 207
+      },
+      {
+        "file": "psc_0208.vol",
+        "t": 208
+      },
+      {
+        "file": "psc_0209.vol",
+        "t": 209
+      },
+      {
+        "file": "psc_0210.vol",
+        "t": 210
+      },
+      {
+        "file": "psc_0211.vol",
+        "t": 211
+      },
+      {
+        "file": "psc_0212.vol",
+        "t": 212
+      },
+      {
+        "file": "psc_0213.vol",
+        "t": 213
+      },
+      {
+        "file": "psc_0214.vol",
+        "t": 214
+      },
+      {
+        "file": "psc_0215.vol",
+        "t": 215
+      },
+      {
+        "file": "psc_0216.vol",
+        "t": 216
+      },
+      {
+        "file": "psc_0217.vol",
+        "t": 217
+      },
+      {
+        "file": "psc_0218.vol",
+        "t": 218
+      },
+      {
+        "file": "psc_0219.vol",
+        "t": 219
+      },
+      {
+        "file": "psc_0220.vol",
+        "t": 220
+      },
+      {
+        "file": "psc_0221.vol",
+        "t": 221
+      },
+      {
+        "file": "psc_0222.vol",
+        "t": 222
+      },
+      {
+        "file": "psc_0223.vol",
+        "t": 223
+      },
+      {
+        "file": "psc_0224.vol",
+        "t": 224
+      },
+      {
+        "file": "psc_0225.vol",
+        "t": 225
+      },
+      {
+        "file": "psc_0226.vol",
+        "t": 226
+      },
+      {
+        "file": "psc_0227.vol",
+        "t": 227
+      },
+      {
+        "file": "psc_0228.vol",
+        "t": 228
+      },
+      {
+        "file": "psc_0229.vol",
+        "t": 229
+      },
+      {
+        "file": "psc_0230.vol",
+        "t": 230
+      },
+      {
+        "file": "psc_0231.vol",
+        "t": 231
+      },
+      {
+        "file": "psc_0232.vol",
+        "t": 232
+      },
+      {
+        "file": "psc_0233.vol",
+        "t": 233
+      },
+      {
+        "file": "psc_0234.vol",
+        "t": 234
+      },
+      {
+        "file": "psc_0235.vol",
+        "t": 235
+      },
+      {
+        "file": "psc_0236.vol",
+        "t": 236
+      },
+      {
+        "file": "psc_0237.vol",
+        "t": 237
+      },
+      {
+        "file": "psc_0238.vol",
+        "t": 238
+      },
+      {
+        "file": "psc_0239.vol",
+        "t": 239
+      },
+      {
+        "file": "psc_0240.vol",
+        "t": 240
+      },
+      {
+        "file": "psc_0241.vol",
+        "t": 241
+      },
+      {
+        "file": "psc_0242.vol",
+        "t": 242
+      },
+      {
+        "file": "psc_0243.vol",
+        "t": 243
+      },
+      {
+        "file": "psc_0244.vol",
+        "t": 244
+      },
+      {
+        "file": "psc_0245.vol",
+        "t": 245
+      },
+      {
+        "file": "psc_0246.vol",
+        "t": 246
+      },
+      {
+        "file": "psc_0247.vol",
+        "t": 247
+      },
+      {
+        "file": "psc_0248.vol",
+        "t": 248
+      },
+      {
+        "file": "psc_0249.vol",
+        "t": 249
+      },
+      {
+        "file": "psc_0250.vol",
+        "t": 250
+      },
+      {
+        "file": "psc_0251.vol",
+        "t": 251
+      },
+      {
+        "file": "psc_0252.vol",
+        "t": 252
+      },
+      {
+        "file": "psc_0253.vol",
+        "t": 253
+      },
+      {
+        "file": "psc_0254.vol",
+        "t": 254
+      },
+      {
+        "file": "psc_0255.vol",
+        "t": 255
+      },
+      {
+        "file": "psc_0256.vol",
+        "t": 256
+      },
+      {
+        "file": "psc_0257.vol",
+        "t": 257
+      },
+      {
+        "file": "psc_0258.vol",
+        "t": 258
+      },
+      {
+        "file": "psc_0259.vol",
+        "t": 259
+      },
+      {
+        "file": "psc_0260.vol",
+        "t": 260
+      },
+      {
+        "file": "psc_0261.vol",
+        "t": 261
+      },
+      {
+        "file": "psc_0262.vol",
+        "t": 262
+      },
+      {
+        "file": "psc_0263.vol",
+        "t": 263
+      },
+      {
+        "file": "psc_0264.vol",
+        "t": 264
+      },
+      {
+        "file": "psc_0265.vol",
+        "t": 265
+      },
+      {
+        "file": "psc_0266.vol",
+        "t": 266
+      }
+    ]
+  },
+  "raw_frames_included": false,
+  "cropinfo": {
+    "cropped": true,
+    "x0": 7,
+    "y0": 0,
+    "z0": 0,
+    "x1": 59,
+    "y1": 64,
+    "z1": 33,
+    "pad": 2
+  }
+}

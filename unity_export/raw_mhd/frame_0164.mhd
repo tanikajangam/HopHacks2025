@@ -1,0 +1,8 @@
+ObjectType = Image
+NDims = 3
+DimSize = 64 64 34
+ElementType = MET_UCHAR
+ElementSpacing = 1 1 1
+ElementByteOrderMSB = False
+ElementDataFile = frame_0164.raw
+

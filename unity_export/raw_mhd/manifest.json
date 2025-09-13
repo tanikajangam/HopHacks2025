@@ -1,0 +1,16 @@
+{
+  "n_frames": 267,
+  "dims": [
+    64,
+    64,
+    34
+  ],
+  "dtype": "uint8",
+  "mode": "raw",
+  "clamp": [
+    0.0,
+    1075.0
+  ],
+  "downsample": 1,
+  "tr_seconds": 2.0
+}
