@@ -1,0 +1,12 @@
+notes notes notes for building on meta quest 2 vr headset
+
+sooo its finicky
+make sure headset is connected, debug mode on, usb debugging (the classics yknow)
+file --> build settings --> refresh --> meta quest or whatever
+
+  
+THE MAIN ISSUE its architecture (meta quest does NOT support ARMx7 architecture it only does ARM64)
+so go to file --> build settings --> player settings --> other settings tab --> configuration --> scripting backend --> change from mono to IL2CPP
+hopefully it works !!!!!
+
+i dunno this is just my own documentation of issues i ran into
