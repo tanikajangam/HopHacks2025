@@ -14,6 +14,8 @@ import {
   Database
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UploadFile {
   id: string;
@@ -27,6 +29,7 @@ interface UploadFile {
 export const UploadArea = () => {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { user } = useAuth();
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -47,30 +50,73 @@ export const UploadArea = () => {
     return <File className="h-5 w-5 text-muted-foreground" />;
   };
 
-  const simulateUpload = (file: UploadFile) => {
-    const interval = setInterval(() => {
-      setFiles(prev => prev.map(f => {
-        if (f.id === file.id) {
-          const newProgress = Math.min(f.progress + Math.random() * 15, 100);
-          const status = newProgress === 100 ? 'completed' : 'uploading';
-          
-          if (status === 'completed') {
-            clearInterval(interval);
-            toast({
-              title: "Upload Completed",
-              description: `${f.name} has been successfully uploaded and validated.`,
-            });
-          }
-          
-          return { ...f, progress: newProgress, status };
-        }
-        return f;
-      }));
-    }, 200);
+  const uploadToSupabase = async (file: UploadFile, actualFile: File) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const filePath = `${user.id}/${file.name}`;
+    
+    try {
+      setFiles(prev => prev.map(f => 
+        f.id === file.id ? { ...f, progress: 10 } : f
+      ));
+
+      const { error: uploadError } = await supabase.storage
+        .from('fmri-data')
+        .upload(filePath, actualFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      setFiles(prev => prev.map(f => 
+        f.id === file.id 
+          ? { ...f, progress: 100, status: 'completed' } 
+          : f
+      ));
+
+      toast({
+        title: "Upload Completed",
+        description: `${file.name} has been successfully uploaded to your fMRI data storage.`,
+      });
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      setFiles(prev => prev.map(f => 
+        f.id === file.id 
+          ? { ...f, status: 'error' } 
+          : f
+      ));
+
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload file. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleFileSelect = (selectedFiles: FileList) => {
-    const newFiles: UploadFile[] = Array.from(selectedFiles).map(file => ({
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const fileArray = Array.from(selectedFiles);
+    const newFiles: UploadFile[] = fileArray.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       size: file.size,
@@ -81,8 +127,10 @@ export const UploadArea = () => {
 
     setFiles(prev => [...prev, ...newFiles]);
     
-    // Start upload simulation for each file
-    newFiles.forEach(simulateUpload);
+    // Start real upload for each file
+    newFiles.forEach((uploadFile, index) => {
+      uploadToSupabase(uploadFile, fileArray[index]);
+    });
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {

@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, Lock, User, Building } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -45,16 +46,40 @@ export const SignupForm = () => {
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     
-    // Mock signup - replace with actual Supabase auth later
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            institution: data.institution,
+            role: data.role,
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "Account Created Successfully",
         description: "Welcome to the fMRI Portal! Please check your email to verify your account.",
       });
-      setIsLoading(false);
+      
       // Redirect to dashboard
       window.location.href = "/dashboard";
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Signup Failed",
+        description: error instanceof Error ? error.message : "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
