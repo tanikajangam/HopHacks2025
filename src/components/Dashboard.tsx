@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTheme } from "@/providers/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEmailNotification } from "@/utils/emailNotifications";
 import {
   Card,
   CardContent,
@@ -131,6 +132,48 @@ export const Dashboard = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
+  };
+
+  const handleDeleteFile = async (fileName: string, filePath: string) => {
+    try {
+      const { error } = await supabase.storage
+        .from('fmri-data')
+        .remove([filePath]);
+
+      if (error) throw error;
+
+      toast({
+        title: "File Deleted",
+        description: `${fileName} has been deleted successfully`,
+      });
+
+      // Send email notification if enabled
+      if (emailAlerts && user?.email) {
+        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+        await sendEmailNotification({
+          userEmail: user.email,
+          userName,
+          type: 'deletion',
+          files: [fileName]
+        });
+      }
+
+      // Refresh the storage data
+      if (user) {
+        const fetchStorageData = async () => {
+          // Re-fetch storage data logic here
+          // This would be the same logic from the useEffect
+        };
+        fetchStorageData();
+      }
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete file",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -361,7 +404,7 @@ export const Dashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <UploadArea />
+                  <UploadArea emailAlertsEnabled={emailAlerts} />
                 </CardContent>
               </Card>
             </div>

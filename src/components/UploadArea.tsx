@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { sendEmailNotification } from "@/utils/emailNotifications";
 
 interface UploadFile {
   id: string;
@@ -26,7 +27,7 @@ interface UploadFile {
   status: "uploading" | "completed" | "error";
 }
 
-export const UploadArea = () => {
+export const UploadArea = ({ emailAlertsEnabled = false }: { emailAlertsEnabled?: boolean }) => {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const { user } = useAuth();
@@ -134,6 +135,17 @@ export const UploadArea = () => {
         title: "Upload Completed",
         description: `${file.name} uploaded successfully`,
       });
+
+      // Send email notification if enabled
+      if (emailAlertsEnabled && user?.email) {
+        const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+        await sendEmailNotification({
+          userEmail: user.email,
+          userName,
+          type: 'upload',
+          files: [file.name]
+        });
+      }
     } catch (error) {
       console.error("Upload error:", error);
       setFiles((prev) =>
