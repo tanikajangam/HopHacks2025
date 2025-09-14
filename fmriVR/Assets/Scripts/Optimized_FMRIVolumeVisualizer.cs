@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FMRIVolumeVisualizer : MonoBehaviour
+public class Optimized_FMRIVolumeVisualizer : MonoBehaviour
 {
     [Header("FMRI Data Source")]
     public FMRILoader fmriLoader;
@@ -294,25 +294,28 @@ public class FMRIVolumeVisualizer : MonoBehaviour
             DestroyImmediate(volumeTexture);
         }
         
-        // Try different formats in order of preference for Quest 2
-        TextureFormat[] formatsToTry = {
-            TextureFormat.RGBA32,     // Most compatible
-            TextureFormat.RHalf,      // Half precision float
-            TextureFormat.RFloat      // Full precision (may not work on Quest 2)
-        };
+        // // Try different formats in order of preference for Quest 2
+        // TextureFormat[] formatsToTry = {
+        //     TextureFormat.RGBA32,     // Most compatible
+        //     TextureFormat.RHalf,      // Half precision float
+        //     TextureFormat.RFloat      // Full precision (may not work on Quest 2)
+        // };
         
-        TextureFormat selectedFormat = TextureFormat.RGBA32;
+        // TextureFormat selectedFormat = TextureFormat.RGBA32;
         
-        // Test which formats are supported
-        foreach (TextureFormat format in formatsToTry)
-        {
-            if (SystemInfo.SupportsTextureFormat(format))
-            {
-                selectedFormat = format;
-                Debug.Log($"Selected texture format: {selectedFormat}");
-                break;
-            }
-        }
+        TextureFormat selectedFormat = TextureFormat.RGBA32; // Force this format
+        Debug.Log($"Forcing RGBA32 format");
+
+        // // Test which formats are supported
+        // foreach (TextureFormat format in formatsToTry)
+        // {
+        //     if (SystemInfo.SupportsTextureFormat(format))
+        //     {
+        //         selectedFormat = format;
+        //         Debug.Log($"Selected texture format: {selectedFormat}");
+        //         break;
+        //     }
+        // }
         
         // Create 3D texture with compatible format
         volumeTexture = new Texture3D(renderSizeX, renderSizeY, renderSizeZ, selectedFormat, false);
@@ -383,6 +386,14 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     // Apply the color data to the texture
     volumeTexture.SetPixels(colors);
     volumeTexture.Apply();
+
+    Color[] verifyColors = volumeTexture.GetPixels();
+    float maxFound = 0f;
+    for (int i = 0; i < verifyColors.Length; i++)
+    {
+        if (verifyColors[i].r > maxFound) maxFound = verifyColors[i].r;
+    }
+    Debug.Log($"Max value in texture after Apply(): {maxFound}");
     
     // Set texture on material
     if (volumeMaterialInstance != null)
@@ -409,7 +420,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         float shaderMinValue = 0.0f;  // Always 0 since we normalize the texture data
         float shaderMaxValue = 1.0f;  // Always 1 since we normalize the texture data
         
-        //Debug.Log($"Setting shader properties - Texture data is normalized to 0-1 range");
+        Debug.Log($"Setting shader properties - Texture data is normalized to 0-1 range");
         
         // Update shader properties
         volumeMaterialInstance.SetFloat("_StepSize", stepSize);
