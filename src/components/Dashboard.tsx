@@ -239,8 +239,8 @@ export const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">fMRI Portal</h1>
-              <p className="text-sm text-muted-foreground">
-                Neuroimaging Data Management
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                Neuroimaging Data Visualization
               </p>
             </div>
           </div>

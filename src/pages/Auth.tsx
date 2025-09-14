@@ -23,15 +23,14 @@ export default function Auth() {
     try {
       setIsAuthenticating(true);
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          },
-          skipBrowserRedirect: true
+          }
         },
       });
 
@@ -41,7 +40,7 @@ export default function Auth() {
 
       // Open popup for Google auth
       const popup = window.open(
-        `https://gmlkqbvksxkhpxrtrbpz.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin)}`,
+        data.url,
         'google-auth',
         'width=500,height=600,scrollbars=yes,resizable=yes'
       );
@@ -56,10 +55,30 @@ export default function Auth() {
           supabase.auth.getSession().then(({ data: { session } }) => {
             if (session) {
               navigate("/dashboard");
+            } else {
+              toast({
+                title: "Authentication Cancelled",
+                description: "Sign-in was cancelled or failed. Please try again.",
+                variant: "destructive",
+              });
             }
           });
         }
       }, 1000);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        if (!popup?.closed) {
+          popup?.close();
+          clearInterval(checkClosed);
+          setIsAuthenticating(false);
+          toast({
+            title: "Authentication Timeout",
+            description: "Sign-in took too long. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }, 300000);
 
     } catch (error: any) {
       console.error("Sign-in error:", error);
@@ -92,7 +111,7 @@ export default function Auth() {
           </div>
           <CardTitle className="text-2xl">fMRI Portal</CardTitle>
           <CardDescription>
-            Sign in with your Google account to access the neuroimaging data management portal
+            Sign in with your Google account to access the neuroimaging data visualization portal
           </CardDescription>
         </CardHeader>
         <CardContent>
