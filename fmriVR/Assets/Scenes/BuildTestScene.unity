@@ -220,7 +220,7 @@ MonoBehaviour:
   chunkSizeX: 4
   chunkSizeY: 4
   chunkSizeZ: 4
-  useFullVolume: 1
+  useFullVolume: 0
 --- !u!1 &236084692
 GameObject:
   m_ObjectHideFlags: 0

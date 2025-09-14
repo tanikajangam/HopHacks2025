@@ -93,11 +93,29 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         playerCamera = Camera.main;
         if (playerCamera == null)
             playerCamera = FindObjectOfType<Camera>();
-        
+
+        // find parent, if it doesnt exist, just make one
+        GameObject parent = GameObject.Find("EmptyTransform");
+        if (parent == null)
+        {
+            parent = new GameObject("EmptyTransform");
+        }
+
         // Create container for all cubes
         GameObject container = new GameObject("FMRI_Cube_Container");
-        container.transform.parent = transform;
+        if (existingContainer != null)
+        {
+            // destroy old container if it already exists (and all its children cubes)
+            DestroyImmediate(existingContainer.gameObject);
+        }
+
+        container.transform.SetParent(parent.transform);
+        //container.transform.parent = transform;
         cubeContainer = container.transform;
+
+        container.transform.localPosition = Vector3.zero;
+        container.transform.localRotation = Quaternion.identity;
+        container.transform.localScale = Vector3.one;
         
         // Find FMRI loader if not assigned
         if (findLoaderAutomatically && fmriLoader == null)
@@ -254,41 +272,41 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         Debug.Log($"Subset range: {globalMinValue:F6} to {globalMaxValue:F6}");
         Debug.Log($"Range difference: {(globalMaxValue - globalMinValue):F6}");
     }
-    
+
     IEnumerator CreateCubeGrid()
     {
         Debug.Log("Creating cube grid...");
-        
+
         // Clear existing cubes
         DestroyAllCubes();
-        
+
         // Create cube prefab if missing
         if (cubePrefab == null && createCubePrefabIfMissing)
         {
             cubePrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubePrefab.name = "FMRI_Voxel_Cube";
         }
-        
+
         if (cubePrefab == null)
         {
             Debug.LogError("No cube prefab assigned and createCubePrefabIfMissing is false!");
             yield break;
         }
-        
+
         // Initialize grid for the render area only
         cubeGrid = new GameObject[renderSizeX, renderSizeY, renderSizeZ];
         cubeMaterials = new Material[renderSizeX * renderSizeY * renderSizeZ];
-        
+
         // Calculate center offset for positioning
         Vector3 centerOffset = new Vector3(
             (renderSizeX - 1) * voxelSize * voxelSpacing * 0.5f,
             (renderSizeY - 1) * voxelSize * voxelSpacing * 0.5f,
             (renderSizeZ - 1) * voxelSize * voxelSpacing * 0.5f
         );
-        
+
         int cubeIndex = 0;
         totalCubes = 0;
-        
+
         for (int x = renderStartX; x < renderEndX; x++)
         {
             for (int y = renderStartY; y < renderEndY; y++)
@@ -298,12 +316,12 @@ public class FMRIVolumeVisualizer : MonoBehaviour
                     // Create cube
                     GameObject cube = Instantiate(cubePrefab, cubeContainer);
                     cube.name = $"Voxel_{x}_{y}_{z}";
-                    
+
                     // Position cube (relative to render area)
                     int relX = x - renderStartX;
                     int relY = y - renderStartY;
                     int relZ = z - renderStartZ;
-                    
+
                     Vector3 position = new Vector3(
                         relX * voxelSize * voxelSpacing - centerOffset.x,
                         relY * voxelSize * voxelSpacing - centerOffset.y,
@@ -311,7 +329,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
                     );
                     cube.transform.localPosition = position;
                     cube.transform.localScale = Vector3.one * voxelSize;
-                    
+
                     // Create unique material
                     Renderer renderer = cube.GetComponent<Renderer>();
                     Material cubeMaterial = new Material(renderer.material);
@@ -331,20 +349,20 @@ public class FMRIVolumeVisualizer : MonoBehaviour
 
                     renderer.material = cubeMaterial;
                     cubeMaterials[cubeIndex] = cubeMaterial;
-                    
+
                     // Store in grid (using relative coordinates)
                     cubeGrid[relX, relY, relZ] = cube;
-                    
+
                     // Add LOD component if needed
                     if (useLevelOfDetail)
                     {
                         FMRIVoxelLOD lodComponent = cube.AddComponent<FMRIVoxelLOD>();
                         lodComponent.maxDistance = maxRenderDistance;
                     }
-                    
+
                     cubeIndex++;
                     totalCubes++;
-                    
+
                     // Yield periodically
                     if (totalCubes % 1000 == 0)
                     {
@@ -353,8 +371,9 @@ public class FMRIVolumeVisualizer : MonoBehaviour
                 }
             }
         }
-        
+
         Debug.Log($"Cube grid created: {totalCubes} cubes ({renderSizeX}x{renderSizeY}x{renderSizeZ})");
+        cubePrefab.SetActive(false);
     }
     
     IEnumerator UpdateAllCubes()
