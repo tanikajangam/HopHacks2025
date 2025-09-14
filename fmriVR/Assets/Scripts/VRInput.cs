@@ -12,6 +12,7 @@ public class VRInput : MonoBehaviour
 
     public int sphereStop = 1;
     public float zoomLevel = 0;
+    public BrainTransformations transformations;
 
     void Start()
     {
@@ -120,8 +121,22 @@ public class VRInput : MonoBehaviour
         // thumbstick axis
         if (controller.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 stick))
         {
-            if (stick.magnitude > 0.1f)
-                Debug.Log($"{hand} Stick: {stick}");
+            
+            // RIGHT STICK CONTROLS ROTATION
+            if (hand.Equals("right"))
+            {
+                if (stick.magnitude > 0.1f) // Deadzone
+                {
+                    // Horizontal stick (x) rotates around Y axis
+                    float yRotation = stick.x;
+
+                    // Vertical stick (y) rotates around X axis
+                    float xRotation = stick.y;
+
+                    //transform.Rotate(xRotation, yRotation, 0f, Space.Self);
+                    transformations.UpdateRotation(xRotation, yRotation);
+                }
+            }
         }
     }
 

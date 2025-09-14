@@ -45,7 +45,7 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
-            #include "Include/TricubicSampling.cginc"
+            #include "Shaders/TricubicSampling.cginc"
 
             #define AMBIENT_LIGHTING_FACTOR 0.2
             #define JITTER_FACTOR 5.0
