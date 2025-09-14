@@ -10,12 +10,12 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     
     [Header("Volume Settings")]
     public int currentTimePoint = 0;
-    public float voxelSize = 1f;
-    public float voxelSpacing = 1.1f; // Multiplier for spacing between cubes
+    public float voxelSize = 1f; // Now controls overall volume scale
     
-    [Header("Cube Prefab")]
-    public GameObject cubePrefab;
-    public bool createCubePrefabIfMissing = true;
+    [Header("Volume Rendering")]
+    public Material volumeMaterial; // Assign the FMRIVolumeRenderer material
+    public bool createMaterialIfMissing = true;
+    public Shader volumeShader; // Reference to the volume shader
     
     [System.Serializable]
     public class ColorScheme
@@ -48,11 +48,17 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     [Range(0f, 1f)]
     public float customMaxValue = 1f;
     
+    [Header("Shader Properties")]
+    [Range(0.01f, 0.2f)]
+    public float stepSize = 0.05f;
+    [Range(10, 200)]
+    public int maxSteps = 50;
+    [Range(0.1f, 50.0f)]
+    public float intensityScale = 1.0f;
+    
     [Header("Performance")]
     public bool updateInRealTime = true;
     public float updateInterval = 0.1f;
-    public bool useLevelOfDetail = true;
-    public float maxRenderDistance = 50f;
     
     [Header("Animation")]
     public bool animateTimePoints = false;
@@ -62,17 +68,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     public bool dataReady = false;
     public float globalMinValue = 0f;
     public float globalMaxValue = 0f;
-    public int totalCubes = 0;
-    public int visibleCubes = 0;
     
-    // Private variables
-    private GameObject[,,] cubeGrid;
-    private Material[] cubeMaterials;
-    private float lastUpdateTime = 0f;
-    private float animationTimer = 0f;
-    private Camera playerCamera;
-    private Transform cubeContainer;
-
     [Header("Volume Subset")]
     public int xOffset = 0;
     public int yOffset = 0; 
@@ -82,23 +78,23 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     public int chunkSizeZ = 20;
     public bool useFullVolume = true;
     
-    // Store the actual render bounds for other functions to use
+    // Private variables for volume rendering
+    private GameObject volumeObject;
+    private Texture3D volumeTexture;
+    private Material volumeMaterialInstance;
+    private MeshRenderer volumeRenderer;
+    
+    // Calculated render bounds
     private int renderStartX, renderStartY, renderStartZ;
     private int renderEndX, renderEndY, renderEndZ;
     private int renderSizeX, renderSizeY, renderSizeZ;
     
+    // Timing
+    private float lastUpdateTime = 0f;
+    private float animationTimer = 0f;
+
     void Start()
     {
-        // Get main camera for LOD calculations
-        playerCamera = Camera.main;
-        if (playerCamera == null)
-            playerCamera = FindObjectOfType<Camera>();
-        
-        // Create container for all cubes
-        GameObject container = new GameObject("FMRI_Cube_Container");
-        container.transform.parent = transform;
-        cubeContainer = container.transform;
-        
         // Find FMRI loader if not assigned
         if (findLoaderAutomatically && fmriLoader == null)
         {
@@ -136,28 +132,22 @@ public class FMRIVolumeVisualizer : MonoBehaviour
                     if (newTimePoint != currentTimePoint)
                     {
                         currentTimePoint = newTimePoint;
-                        yield return StartCoroutine(UpdateAllCubes());
+                        yield return StartCoroutine(UpdateVolumeTexture());
                     }
                 }
                 
                 // Update visualization if enough time has passed
                 if (updateInRealTime && Time.time - lastUpdateTime >= updateInterval)
                 {
-                    yield return StartCoroutine(UpdateAllCubes());
+                    UpdateShaderProperties();
                     lastUpdateTime = Time.time;
-                }
-                
-                // Update LOD if enabled
-                if (useLevelOfDetail)
-                {
-                    UpdateLevelOfDetail();
                 }
             }
             else if (dataReady)
             {
                 // Data was ready but now isn't - cleanup
                 dataReady = false;
-                DestroyAllCubes();
+                DestroyVolumeObject();
             }
             
             yield return new WaitForSeconds(updateInterval);
@@ -168,20 +158,28 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     {
         Debug.Log("Initializing FMRI volume visualization...");
         
-        // Calculate render bounds first
+        // Calculate render bounds
         CalculateRenderBounds();
         
-        // Calculate global min/max for the subset only
+        // Calculate global min/max for the subset
         yield return StartCoroutine(CalculateGlobalMinMax());
         
-        // Create the cube grid
-        yield return StartCoroutine(CreateCubeGrid());
+        // Create the volume rendering object
+        CreateVolumeObject();
         
-        // Initial color update
-        yield return StartCoroutine(UpdateAllCubes());
+        // Create the 3D texture
+        yield return StartCoroutine(CreateVolumeTexture());
         
+        // IMPORTANT: Set dataReady BEFORE calling UpdateVolumeTexture
         dataReady = true;
-        Debug.Log($"FMRI visualization ready! {totalCubes} cubes created for subset [{renderStartX}-{renderEndX-1}, {renderStartY}-{renderEndY-1}, {renderStartZ}-{renderEndZ-1}]");
+        
+        // Now update the texture (this will now work because dataReady = true)
+        yield return StartCoroutine(UpdateVolumeTexture());
+        
+        // Set initial shader properties
+        UpdateShaderProperties();
+        
+        Debug.Log($"FMRI volume visualization ready! Volume size: {renderSizeX}x{renderSizeY}x{renderSizeZ}");
     }
     
     void CalculateRenderBounds()
@@ -206,7 +204,6 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         renderSizeZ = renderEndZ - renderStartZ;
         
         Debug.Log($"Render bounds: X[{renderStartX}-{renderEndX-1}] Y[{renderStartY}-{renderEndY-1}] Z[{renderStartZ}-{renderEndZ-1}]");
-        Debug.Log($"Render size: {renderSizeX}x{renderSizeY}x{renderSizeZ} = {renderSizeX * renderSizeY * renderSizeZ} cubes");
     }
     
     IEnumerator CalculateGlobalMinMax()
@@ -219,7 +216,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         
         int validValues = 0;
         
-        // Only calculate min/max for the render subset
+        // Calculate min/max for the render subset across all time points
         for (int t = 0; t < fmriLoader.timePoints; t++)
         {
             for (int x = renderStartX; x < renderEndX; x++)
@@ -229,12 +226,6 @@ public class FMRIVolumeVisualizer : MonoBehaviour
                     for (int z = renderStartZ; z < renderEndZ; z++)
                     {
                         float value = fmriLoader.GetVoxelValue(t, x, y, z);
-                        
-                        // Add detailed logging for first few values
-                        if (validValues < 10)
-                        {
-                            Debug.Log($"Sample voxel ({t},{x},{y},{z}): {value}");
-                        }
                         
                         if (!float.IsNaN(value) && !float.IsInfinity(value))
                         {
@@ -250,269 +241,252 @@ public class FMRIVolumeVisualizer : MonoBehaviour
             yield return null;
         }
         
-        Debug.Log($"Valid values found in subset: {validValues}");
-        Debug.Log($"Subset range: {globalMinValue:F6} to {globalMaxValue:F6}");
-        Debug.Log($"Range difference: {(globalMaxValue - globalMinValue):F6}");
+        Debug.Log($"Global range: {globalMinValue:F6} to {globalMaxValue:F6} ({validValues} valid values)");
     }
     
-    IEnumerator CreateCubeGrid()
+    void CreateVolumeObject()
     {
-        Debug.Log("Creating cube grid...");
+        // Clean up existing volume object
+        DestroyVolumeObject();
         
-        // Clear existing cubes
-        DestroyAllCubes();
+        // Create a cube primitive for volume rendering
+        volumeObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        volumeObject.name = "FMRI_Volume";
+        volumeObject.transform.parent = transform;
+        volumeObject.transform.localPosition = Vector3.zero;
         
-        // Create cube prefab if missing
-        if (cubePrefab == null && createCubePrefabIfMissing)
+        // Scale the volume object based on the actual data dimensions and voxel size
+        Vector3 scale = new Vector3(renderSizeX, renderSizeY, renderSizeZ) * voxelSize;
+        volumeObject.transform.localScale = scale;
+        
+        // Get or create the volume material
+        volumeRenderer = volumeObject.GetComponent<MeshRenderer>();
+        
+        if (volumeMaterial == null && createMaterialIfMissing)
         {
-            cubePrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubePrefab.name = "FMRI_Voxel_Cube";
-        }
-        
-        if (cubePrefab == null)
-        {
-            Debug.LogError("No cube prefab assigned and createCubePrefabIfMissing is false!");
-            yield break;
-        }
-        
-        // Initialize grid for the render area only
-        cubeGrid = new GameObject[renderSizeX, renderSizeY, renderSizeZ];
-        cubeMaterials = new Material[renderSizeX * renderSizeY * renderSizeZ];
-        
-        // Calculate center offset for positioning
-        Vector3 centerOffset = new Vector3(
-            (renderSizeX - 1) * voxelSize * voxelSpacing * 0.5f,
-            (renderSizeY - 1) * voxelSize * voxelSpacing * 0.5f,
-            (renderSizeZ - 1) * voxelSize * voxelSpacing * 0.5f
-        );
-        
-        int cubeIndex = 0;
-        totalCubes = 0;
-        
-        for (int x = renderStartX; x < renderEndX; x++)
-        {
-            for (int y = renderStartY; y < renderEndY; y++)
+            // Try to find the shader
+            if (volumeShader == null)
+                volumeShader = Shader.Find("Custom/FMRIVolumeRenderer");
+            
+            if (volumeShader != null)
             {
-                for (int z = renderStartZ; z < renderEndZ; z++)
-                {
-                    // Create cube
-                    GameObject cube = Instantiate(cubePrefab, cubeContainer);
-                    cube.name = $"Voxel_{x}_{y}_{z}";
-                    
-                    // Position cube (relative to render area)
-                    int relX = x - renderStartX;
-                    int relY = y - renderStartY;
-                    int relZ = z - renderStartZ;
-                    
-                    Vector3 position = new Vector3(
-                        relX * voxelSize * voxelSpacing - centerOffset.x,
-                        relY * voxelSize * voxelSpacing - centerOffset.y,
-                        relZ * voxelSize * voxelSpacing - centerOffset.z
-                    );
-                    cube.transform.localPosition = position;
-                    cube.transform.localScale = Vector3.one * voxelSize;
-                    
-                    // Create unique material
-                    Renderer renderer = cube.GetComponent<Renderer>();
-                    Material cubeMaterial = new Material(renderer.material);
-
-                    // Set surface type to transparent
-                    cubeMaterial.SetFloat("_Surface", 1);
-                    cubeMaterial.SetFloat("_Blend", 0);
-                    cubeMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                    cubeMaterial.EnableKeyword("_ALPHABLEND_ON");
-                    cubeMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    cubeMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-
-                    // Set initial color
-                    Color cubeColor = GetColorFromScheme(colorSchemes[currentColorSchemeIndex], 0.5f);
-                    cubeMaterial.color = cubeColor;
-                    cubeMaterial.SetFloat("_QueueOffset", 0);
-
-                    renderer.material = cubeMaterial;
-                    cubeMaterials[cubeIndex] = cubeMaterial;
-                    
-                    // Store in grid (using relative coordinates)
-                    cubeGrid[relX, relY, relZ] = cube;
-                    
-                    // Add LOD component if needed
-                    if (useLevelOfDetail)
-                    {
-                        FMRIVoxelLOD lodComponent = cube.AddComponent<FMRIVoxelLOD>();
-                        lodComponent.maxDistance = maxRenderDistance;
-                    }
-                    
-                    cubeIndex++;
-                    totalCubes++;
-                    
-                    // Yield periodically
-                    if (totalCubes % 1000 == 0)
-                    {
-                        yield return null;
-                    }
-                }
+                volumeMaterial = new Material(volumeShader);
+                volumeMaterial.name = "FMRI_Volume_Material";
+            }
+            else
+            {
+                Debug.LogError("Volume shader not found! Please assign volumeShader or volumeMaterial.");
+                return;
             }
         }
         
-        Debug.Log($"Cube grid created: {totalCubes} cubes ({renderSizeX}x{renderSizeY}x{renderSizeZ})");
+        // Create instance of material
+        volumeMaterialInstance = new Material(volumeMaterial);
+        volumeRenderer.material = volumeMaterialInstance;
+        
+        Debug.Log("Volume object created");
     }
     
-    IEnumerator UpdateAllCubes()
+    IEnumerator CreateVolumeTexture()
     {
-        if (!dataReady || cubeGrid == null) yield break;
+        if (volumeTexture != null)
+        {
+            DestroyImmediate(volumeTexture);
+        }
+        
+        // Create 3D texture
+        volumeTexture = new Texture3D(renderSizeX, renderSizeY, renderSizeZ, TextureFormat.RFloat, false);
+        volumeTexture.name = "FMRI_Volume_Texture";
+        volumeTexture.filterMode = FilterMode.Trilinear;
+        volumeTexture.wrapMode = TextureWrapMode.Clamp;
+        
+        Debug.Log($"Created 3D texture: {renderSizeX}x{renderSizeY}x{renderSizeZ}");
+        yield return null;
+    }
+    
+    IEnumerator UpdateVolumeTexture()
+    {
+        if (volumeTexture == null || !dataReady) yield break;
         
         currentTimePoint = Mathf.Clamp(currentTimePoint, 0, fmriLoader.timePoints - 1);
-        ColorScheme scheme = colorSchemes[Mathf.Clamp(currentColorSchemeIndex, 0, colorSchemes.Length - 1)];
         
+        // Create color array for the texture
+        Color[] colors = new Color[renderSizeX * renderSizeY * renderSizeZ];
+        int index = 0;
+        
+        // Get normalization parameters
         float minVal = useGlobalMinMax ? globalMinValue : customMinValue;
         float maxVal = useGlobalMinMax ? globalMaxValue : customMaxValue;
+        float range = maxVal - minVal;
         
-        int updatedCubes = 0;
-        int cubeIndex = 0;
-
-        for (int x = renderStartX; x < renderEndX; x++)
-        {
-            for (int y = renderStartY; y < renderEndY; y++)
-            {
-                for (int z = renderStartZ; z < renderEndZ; z++)
-                {
-                    int relX = x - renderStartX;
-                    int relY = y - renderStartY;
-                    int relZ = z - renderStartZ;
-                    
-                    GameObject cube = cubeGrid[relX, relY, relZ];
-                    if (cube == null) continue;
-
-                    Material cubeMaterial = cubeMaterials[cubeIndex];
-                    if (cubeMaterial == null) continue;
-                    
-                    // Get voxel value (using absolute coordinates from FMRI data)
-                    float voxelValue = fmriLoader.GetVoxelValue(currentTimePoint, x, y, z);
-                    
-                    // Normalize value
-                    float normalizedValue = 0f;
-                    if (maxVal > minVal && !float.IsNaN(voxelValue) && !float.IsInfinity(voxelValue))
-                    {
-                        normalizedValue = Mathf.Clamp01((voxelValue - minVal) / (maxVal - minVal));
-                    }
-                    
-                    // Calculate and apply color
-                    Color cubeColor = GetColorFromScheme(scheme, normalizedValue);
-                    cubeMaterial.color = cubeColor;
-
-                    // Ensure shader is set correctly
-                    cubeMaterial.shader = cubeMaterial.shader;
-                    
-                    cubeIndex++;
-                    updatedCubes++;
-                    
-                    if (updatedCubes % 5000 == 0)
-                    {
-                        yield return null;
-                    }
-                }
-            }
-        }
+        // DEBUG: Track actual data statistics
+        float actualMin = float.MaxValue;
+        float actualMax = float.MinValue;
+        float sum = 0f;
+        int validCount = 0;
+        List<float> sampleValues = new List<float>();
+        List<float> normalizedSamples = new List<float>();
         
-        Debug.Log($"Updated {updatedCubes} cubes for time point {currentTimePoint}");
-    }
-    
-    Color GetColorFromScheme(ColorScheme scheme, float normalizedValue)
-    {
-        Color baseColor = Color.Lerp(scheme.minColor, scheme.maxColor, normalizedValue);
+        Debug.Log($"=== FMRI Data Debug - Time Point {currentTimePoint} ===");
+        Debug.Log($"Normalization range: {minVal:F6} to {maxVal:F6} (span: {range:F6})");
         
-        if (scheme.useTransparency)
-        {
-            float alpha = Mathf.Lerp(scheme.minAlpha, scheme.maxAlpha, normalizedValue);
-            baseColor.a = alpha;
-        }
-        else
-        {
-            baseColor.a = 1f;
-        }
-        
-        return baseColor;
-    }
-    
-    void UpdateLevelOfDetail()
-    {
-        if (playerCamera == null || cubeGrid == null) return;
-        
-        visibleCubes = 0;
-        Vector3 cameraPos = playerCamera.transform.position;
-        
-        // Use the actual cube grid dimensions, not the FMRI loader dimensions
-        for (int x = 0; x < renderSizeX; x++)
+        // Fill texture with current time point data
+        for (int z = 0; z < renderSizeZ; z++)
         {
             for (int y = 0; y < renderSizeY; y++)
             {
-                for (int z = 0; z < renderSizeZ; z++)
+                for (int x = 0; x < renderSizeX; x++)
                 {
-                    GameObject cube = cubeGrid[x, y, z];
-                    if (cube == null) continue;
+                    // Get voxel value (convert from relative to absolute coordinates)
+                    float rawValue = fmriLoader.GetVoxelValue(currentTimePoint, 
+                        x + renderStartX, y + renderStartY, z + renderStartZ);
                     
-                    float distance = Vector3.Distance(cameraPos, cube.transform.position);
-                    bool shouldBeVisible = distance <= maxRenderDistance;
-                    
-                    if (cube.activeInHierarchy != shouldBeVisible)
+                    // DEBUG: Collect raw statistics
+                    if (!float.IsNaN(rawValue) && !float.IsInfinity(rawValue))
                     {
-                        cube.SetActive(shouldBeVisible);
+                        actualMin = Mathf.Min(actualMin, rawValue);
+                        actualMax = Mathf.Max(actualMax, rawValue);
+                        sum += rawValue;
+                        validCount++;
+                        
+                        if (sampleValues.Count < 20)
+                            sampleValues.Add(rawValue);
                     }
                     
-                    if (shouldBeVisible) visibleCubes++;
+                    // NORMALIZE the value to 0-1 range before storing in texture
+                    float normalizedValue = 0f;
+                    if (range > 0.000001f && !float.IsNaN(rawValue) && !float.IsInfinity(rawValue))
+                    {
+                        normalizedValue = Mathf.Clamp01((rawValue - minVal) / range);
+                    }
+                    
+                    // Collect normalized samples for debugging
+                    if (normalizedSamples.Count < 20)
+                        normalizedSamples.Add(normalizedValue);
+                    
+                    // Store NORMALIZED value in red channel (shader expects 0-1 range)
+                    colors[index] = new Color(normalizedValue, 0, 0, 1);
+                    index++;
                 }
             }
-        }
-    }
-    
-    void DestroyAllCubes()
-    {
-        if (cubeGrid != null)
-        {
-            int xSize = cubeGrid.GetLength(0);
-            int ySize = cubeGrid.GetLength(1);
-            int zSize = cubeGrid.GetLength(2);
             
-            for (int x = 0; x < xSize; x++)
-            {
-                for (int y = 0; y < ySize; y++)
-                {
-                    for (int z = 0; z < zSize; z++)
-                    {
-                        if (cubeGrid[x, y, z] != null)
-                        {
-                            DestroyImmediate(cubeGrid[x, y, z]);
-                        }
-                    }
-                }
-            }
+            // Yield periodically to prevent freezing
+            if (z % 2 == 0) yield return null;
         }
         
-        // Clean up materials
-        if (cubeMaterials != null)
+        // DEBUG: Print comprehensive statistics
+        Debug.Log($"Raw data range this timepoint: {actualMin:F6} to {actualMax:F6}");
+        Debug.Log($"Global range (all timepoints): {globalMinValue:F6} to {globalMaxValue:F6}");
+        Debug.Log($"Average raw value: {(sum / validCount):F6}");
+        Debug.Log($"Valid voxel count: {validCount} / {colors.Length}");
+        
+        // Print raw sample values
+        string rawSampleStr = "Raw samples: ";
+        foreach (float val in sampleValues)
+            rawSampleStr += $"{val:F1}, ";
+        Debug.Log(rawSampleStr);
+        
+        // Print normalized sample values  
+        string normSampleStr = "Normalized samples: ";
+        foreach (float val in normalizedSamples)
+            normSampleStr += $"{val:F3}, ";
+        Debug.Log(normSampleStr);
+        
+        // Check for proper normalization - calculate min/max manually
+        float normMin = 1f;
+        float normMax = 0f;
+        if (normalizedSamples.Count > 0)
         {
-            for (int i = 0; i < cubeMaterials.Length; i++)
+            foreach (float val in normalizedSamples)
             {
-                if (cubeMaterials[i] != null)
-                {
-                    DestroyImmediate(cubeMaterials[i]);
-                }
+                if (val < normMin) normMin = val;
+                if (val > normMax) normMax = val;
             }
         }
+        else
+        {
+            normMin = 0f;
+            normMax = 0f;
+        }
         
-        cubeGrid = null;
-        cubeMaterials = null;
-        totalCubes = 0;
-        visibleCubes = 0;
+        Debug.Log($"Normalized range in texture: {normMin:F3} to {normMax:F3}");
+        
+        if (normMax - normMin < 0.01f)
+        {
+            Debug.LogWarning("Very little variation in normalized data - check if global min/max calculation is correct!");
+        }
+        
+        // Apply the color data to the texture
+        volumeTexture.SetPixels(colors);
+        volumeTexture.Apply();
+        
+        // Set texture on material
+        if (volumeMaterialInstance != null)
+        {
+            volumeMaterialInstance.SetTexture("_VolumeTexture", volumeTexture);
+        }
+        
+        Debug.Log($"Updated volume texture for time point {currentTimePoint}");
     }
     
-    // Public methods
-    [ContextMenu("Update All Cubes Now")]
-    public void UpdateAllCubesNow()
+    
+    void UpdateShaderProperties()
+    {
+        if (volumeMaterialInstance == null) return;
+        
+        // Get current color scheme
+        ColorScheme scheme = colorSchemes[Mathf.Clamp(currentColorSchemeIndex, 0, colorSchemes.Length - 1)];
+        
+        // IMPORTANT: Since we're now normalizing data in UpdateVolumeTexture, 
+        // the shader should always work with 0-1 range
+        float shaderMinValue = 0.0f;  // Always 0 since we normalize the texture data
+        float shaderMaxValue = 1.0f;  // Always 1 since we normalize the texture data
+        
+        Debug.Log($"Setting shader properties - Texture data is normalized to 0-1 range");
+        
+        // Update shader properties
+        volumeMaterialInstance.SetFloat("_StepSize", stepSize);
+        volumeMaterialInstance.SetInt("_MaxSteps", maxSteps);
+        volumeMaterialInstance.SetFloat("_IntensityScale", intensityScale);
+        volumeMaterialInstance.SetFloat("_MinValue", shaderMinValue);  // Always 0
+        volumeMaterialInstance.SetFloat("_MaxValue", shaderMaxValue);  // Always 1
+        volumeMaterialInstance.SetColor("_MinColor", scheme.minColor);
+        volumeMaterialInstance.SetColor("_MaxColor", scheme.maxColor);
+        volumeMaterialInstance.SetFloat("_MinAlpha", scheme.minAlpha);
+        volumeMaterialInstance.SetFloat("_MaxAlpha", scheme.maxAlpha);
+        volumeMaterialInstance.SetFloat("_UseTransparency", scheme.useTransparency ? 1.0f : 0.0f);
+    }
+    
+    void DestroyVolumeObject()
+    {
+        if (volumeObject != null)
+        {
+            DestroyImmediate(volumeObject);
+            volumeObject = null;
+        }
+        
+        if (volumeMaterialInstance != null)
+        {
+            DestroyImmediate(volumeMaterialInstance);
+            volumeMaterialInstance = null;
+        }
+        
+        if (volumeTexture != null)
+        {
+            DestroyImmediate(volumeTexture);
+            volumeTexture = null;
+        }
+        
+        volumeRenderer = null;
+    }
+    
+    // Public methods to maintain compatibility with existing code
+    [ContextMenu("Update Volume Now")]
+    public void UpdateVolumeNow()
     {
         if (dataReady)
         {
-            StartCoroutine(UpdateAllCubes());
+            StartCoroutine(UpdateVolumeTexture());
         }
     }
     
@@ -543,7 +517,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
             currentTimePoint = newTimePoint;
             if (dataReady)
             {
-                StartCoroutine(UpdateAllCubes());
+                StartCoroutine(UpdateVolumeTexture());
             }
         }
     }
@@ -553,7 +527,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         currentColorSchemeIndex = Mathf.Clamp(schemeIndex, 0, colorSchemes.Length - 1);
         if (dataReady)
         {
-            StartCoroutine(UpdateAllCubes());
+            UpdateShaderProperties();
         }
     }
     
@@ -563,21 +537,10 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         animationTimer = currentTimePoint;
     }
     
-    public GameObject GetCubeAt(int x, int y, int z)
-    {
-        if (cubeGrid != null && x >= 0 && x < cubeGrid.GetLength(0) &&
-            y >= 0 && y < cubeGrid.GetLength(1) && z >= 0 && z < cubeGrid.GetLength(2))
-        {
-            return cubeGrid[x, y, z];
-        }
-        return null;
-    }
-    
     public void UpdateSubsetSettings()
     {
         if (fmriLoader != null && fmriLoader.dataLoaded)
         {
-            // Recalculate bounds and recreate visualization
             dataReady = false;
             StartCoroutine(InitializeVisualization());
         }
@@ -585,7 +548,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
     
     void OnDestroy()
     {
-        DestroyAllCubes();
+        DestroyVolumeObject();
     }
     
     void OnValidate()
@@ -602,7 +565,13 @@ public class FMRIVolumeVisualizer : MonoBehaviour
             customMaxValue = customMinValue + 0.1f;
         }
         
-        // Clamp subset parameters to valid ranges
+        // Update shader properties in real-time during inspector changes
+        if (dataReady && Application.isPlaying)
+        {
+            UpdateShaderProperties();
+        }
+        
+        // Clamp subset parameters
         if (fmriLoader != null)
         {
             xOffset = Mathf.Clamp(xOffset, 0, fmriLoader.xSize - 1);
@@ -612,29 +581,6 @@ public class FMRIVolumeVisualizer : MonoBehaviour
             chunkSizeX = Mathf.Clamp(chunkSizeX, 1, fmriLoader.xSize - xOffset);
             chunkSizeY = Mathf.Clamp(chunkSizeY, 1, fmriLoader.ySize - yOffset);
             chunkSizeZ = Mathf.Clamp(chunkSizeZ, 1, fmriLoader.zSize - zOffset);
-        }
-    }
-}
-
-// Helper component for Level of Detail
-public class FMRIVoxelLOD : MonoBehaviour
-{
-    public float maxDistance = 50f;
-    private Camera playerCamera;
-    
-    void Start()
-    {
-        playerCamera = Camera.main;
-        if (playerCamera == null)
-            playerCamera = FindObjectOfType<Camera>();
-    }
-    
-    void Update()
-    {
-        if (playerCamera != null)
-        {
-            float distance = Vector3.Distance(playerCamera.transform.position, transform.position);
-            gameObject.SetActive(distance <= maxDistance);
         }
     }
 }
