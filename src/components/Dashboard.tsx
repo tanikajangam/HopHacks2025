@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import { useTheme } from "@/providers/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -104,8 +105,8 @@ export const Dashboard = () => {
 
   const [openSettings, setOpenSettings] = useState(false);
   const [openUser, setOpenUser] = useState(false);
-
-  const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
+  
+  const { theme, setTheme } = useTheme();
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [autoBidsSort, setAutoBidsSort] = useState(true);
   const [retentionDays, setRetentionDays] = useState(365);
