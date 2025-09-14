@@ -20,9 +20,14 @@ public class BrainTransformations : MonoBehaviour
     public Vector3 defaultRotationSpeed;
     public const float ROT_AMT = 10f;
 
-    [Range(0.1f, 1f)]
-    public float scaleFactor = 0.4f;
+    
+    public const float SCALE_MIN = 0.1f;
+    public const float SCALE_MAX = 3f;
     public const float SCALE_AMT = 0.05f;
+
+    [Range(SCALE_MIN, SCALE_MAX)]
+    public float scaleFactor = 0.4f;
+
 
     void Start()
     {
@@ -46,12 +51,19 @@ public class BrainTransformations : MonoBehaviour
 
     public void ZoomIn()
     {
-        scaleFactor += SCALE_AMT;
+        if (scaleFactor < SCALE_MAX)
+        {
+            scaleFactor += SCALE_AMT;
+        }
+        
     }
 
     public void ZoomOut()
     {
-        scaleFactor -= SCALE_AMT;
+        if (scaleFactor > SCALE_MIN)
+        {
+            scaleFactor -= SCALE_AMT;
+        }
     }
     
 }

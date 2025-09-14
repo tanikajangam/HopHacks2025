@@ -134,7 +134,7 @@ public class VRInput : MonoBehaviour
                     float yRotation = stick.x;
 
                     // Vertical stick (y) rotates around X axis
-                    float xRotation = stick.y;
+                    float xRotation = -stick.y;
 
                     //transform.Rotate(xRotation, yRotation, 0f, Space.Self);
                     transformations.UpdateRotation(xRotation, yRotation);

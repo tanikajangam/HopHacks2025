@@ -54,7 +54,7 @@ public class Optimized_FMRIVolumeVisualizer : MonoBehaviour
     [Range(10, 200)]
     public int maxSteps = 50;
     [Range(0.1f, 50.0f)]
-    public float intensityScale = 1.0f;
+    public float intensityScale = 7.0f;
     
     [Header("Performance")]
     public bool updateInRealTime = true;
