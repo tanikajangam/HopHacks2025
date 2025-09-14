@@ -20,16 +20,55 @@ const Index = () => {
 
   const signInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/auth/callback",
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         },
       });
 
       if (error) {
         throw error;
       }
+
+      // Open popup for Google auth
+      const popup = window.open(
+        data.url,
+        'google-auth',
+        'width=500,height=600,scrollbars=yes,resizable=yes'
+      );
+
+      // Listen for popup completion
+      const checkClosed = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkClosed);
+          
+          // Check if user was authenticated
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+              navigate("/dashboard");
+            }
+          });
+        }
+      }, 1000);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        if (!popup?.closed) {
+          popup?.close();
+          clearInterval(checkClosed);
+          toast({
+            title: "Authentication Timeout",
+            description: "Sign-in took too long. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }, 300000);
+
     } catch (error: any) {
       toast({
         title: "Authentication failed",
@@ -65,8 +104,8 @@ const Index = () => {
           </h1>
           
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Secure, BIDS-compliant neuroimaging data management platform for researchers. 
-            Upload, organize, and manage your fMRI datasets with ease.
+            Secure, BIDS-compliant neuroimaging data visualization platform for researchers. 
+            Upload, organize, and visualize your fMRI datasets with ease.
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
