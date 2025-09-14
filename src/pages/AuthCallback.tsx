@@ -12,18 +12,38 @@ export default function AuthCallback() {
         
         if (error) {
           console.error("Auth callback error:", error);
-          navigate("/auth");
+          // If this is a popup, close it. Otherwise navigate to auth
+          if (window.opener) {
+            window.close();
+          } else {
+            navigate("/auth");
+          }
           return;
         }
 
         if (data?.session?.user) {
-          navigate("/dashboard");
+          // If this is a popup, close it and let the parent handle navigation
+          if (window.opener) {
+            window.close();
+          } else {
+            navigate("/dashboard");
+          }
         } else {
-          navigate("/auth");
+          // If this is a popup, close it. Otherwise navigate to auth
+          if (window.opener) {
+            window.close();
+          } else {
+            navigate("/auth");
+          }
         }
       } catch (error) {
         console.error("Auth callback error:", error);
-        navigate("/auth");
+        // If this is a popup, close it. Otherwise navigate to auth
+        if (window.opener) {
+          window.close();
+        } else {
+          navigate("/auth");
+        }
       }
     };
 

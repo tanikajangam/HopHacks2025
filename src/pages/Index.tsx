@@ -27,7 +27,8 @@ const Index = () => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          skipBrowserRedirect: true // Prevent main tab redirect
         },
       });
 
