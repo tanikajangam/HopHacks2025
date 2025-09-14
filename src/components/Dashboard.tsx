@@ -301,13 +301,13 @@ export const Dashboard = () => {
 
             <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-accent">
+                <CardTitle className="text-sm font-medium text-primary">
                   Storage Used
                 </CardTitle>
-                <UploadCloud className="h-4 w-4 text-accent" />
+                <UploadCloud className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-accent">
+                <div className="text-2xl font-bold text-primary">
                   {(storageUsed / (1024 * 1024)).toFixed(1)} MB
                 </div>
                 <Progress value={(storageUsed / (521 * 1024 * 1024)) * 100} className="mt-2" />
@@ -334,13 +334,13 @@ export const Dashboard = () => {
 
             <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-accent">
+                <CardTitle className="text-sm font-medium text-primary">
                   Compliance Score
                 </CardTitle>
-                <FileText className="h-4 w-4 text-accent" />
+                <FileText className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-accent">98%</div>
+                <div className="text-2xl font-bold text-primary">98%</div>
                 <p className="text-xs text-muted-foreground">BIDS compliant</p>
               </CardContent>
             </Card>
@@ -368,7 +368,7 @@ export const Dashboard = () => {
             <div>
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-accent">
+                  <CardTitle className="flex items-center gap-2 text-primary">
                     <Activity className="h-5 w-5" />
                     Recent Activity
                   </CardTitle>
