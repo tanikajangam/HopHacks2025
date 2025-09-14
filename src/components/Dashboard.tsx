@@ -295,11 +295,11 @@ export const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {(storageUsed / (1024 * 1024 * 1024)).toFixed(1)} GB
+                  {(storageUsed / (1024 * 1024)).toFixed(1)} MB
                 </div>
-                <Progress value={(storageUsed / (1024 * 1024 * 1024 * 1024)) * 100} className="mt-2" />
+                <Progress value={(storageUsed / (521 * 1024 * 1024)) * 100} className="mt-2" />
                 <p className="text-xs text-muted-foreground">
-                  {((storageUsed / (1024 * 1024 * 1024 * 1024)) * 100).toFixed(1)}% of 1TB quota
+                  {((storageUsed / (521 * 1024 * 1024)) * 100).toFixed(1)}% of 521MB quota
                 </p>
               </CardContent>
             </Card>
