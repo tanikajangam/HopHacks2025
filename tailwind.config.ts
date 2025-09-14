@@ -13,9 +13,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        'jacques': ['Jacques Francois', 'serif'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

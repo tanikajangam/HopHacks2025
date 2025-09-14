@@ -137,13 +137,26 @@ export const Dashboard = () => {
     
     const fetchStorageData = async () => {
       try {
-        // Get storage data from the fmri-data bucket
-        const { data: files, error } = await supabase.storage
+        // Get all files in user's directory to calculate total storage
+        const { data: allFiles, error: filesError } = await supabase.storage
           .from('fmri-data')
-          .list(user.id, { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+          .list(user.id, { 
+            limit: 1000, 
+            sortBy: { column: 'created_at', order: 'desc' }
+          });
 
-        if (error) {
-          console.error('Error fetching storage data:', error);
+        if (filesError) {
+          console.error('Error fetching files:', filesError);
+          return;
+        }
+
+        // Get folders to count subjects
+        const { data: folders, error: foldersError } = await supabase.storage
+          .from('fmri-data')
+          .list(user.id, { limit: 1000 });
+
+        if (foldersError) {
+          console.error('Error fetching folders:', foldersError);
           return;
         }
 
@@ -152,25 +165,43 @@ export const Dashboard = () => {
         let totalSize = 0;
         const recentActivity: ActivityItem[] = [];
 
-        if (files) {
-          // Get all folders in user directory to count subjects
-          const { data: folders } = await supabase.storage
-            .from('fmri-data')
-            .list(user.id, { limit: 1000 });
+        // Process folders for subject count
+        if (folders) {
+          folders.forEach(item => {
+            if (item.name.startsWith('sub-')) {
+              subjects.add(item.name);
+            }
+          });
+        }
 
-          if (folders) {
-            folders.forEach(item => {
-              if (item.name.startsWith('sub-')) {
-                subjects.add(item.name);
-              }
-            });
-          }
-
-          // Calculate total storage and create activity items
-          files.slice(0, 10).forEach((file, index) => {
-            totalSize += file.metadata?.size || 0;
+        // Process files for storage calculation and activity
+        if (allFiles) {
+          // Calculate total storage from all files
+          const calculateFolderSize = async (folderPath: string): Promise<number> => {
+            const { data: folderFiles } = await supabase.storage
+              .from('fmri-data')
+              .list(folderPath, { limit: 1000 });
             
-            // Create mock activity items with different types
+            let folderSize = 0;
+            if (folderFiles) {
+              for (const file of folderFiles) {
+                if (file.metadata?.size) {
+                  folderSize += file.metadata.size;
+                }
+                // If it's a folder, recursively calculate its size
+                if (!file.metadata?.size && file.name) {
+                  folderSize += await calculateFolderSize(`${folderPath}/${file.name}`);
+                }
+              }
+            }
+            return folderSize;
+          };
+
+          // Calculate total size including all nested files
+          totalSize = await calculateFolderSize(user.id);
+
+          // Create activity items from recent files
+          allFiles.slice(0, 10).forEach((file, index) => {
             const activityType = index % 3 === 0 ? 'upload' : index % 3 === 1 ? 'download' : 'delete';
             recentActivity.push({
               id: file.id || String(index),
@@ -190,6 +221,11 @@ export const Dashboard = () => {
     };
 
     fetchStorageData();
+    
+    // Set up polling to update storage data every 30 seconds
+    const interval = setInterval(fetchStorageData, 30000);
+    
+    return () => clearInterval(interval);
   }, [user]);
 
   return (
