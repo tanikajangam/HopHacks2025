@@ -23,64 +23,16 @@ export default function Auth() {
     try {
       setIsAuthenticating(true);
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-          skipBrowserRedirect: true // Prevent main tab redirect
         },
       });
 
       if (error) {
         throw error;
       }
-
-      // Open popup for Google auth
-      const popup = window.open(
-        data.url,
-        'google-auth',
-        'width=500,height=600,scrollbars=yes,resizable=yes'
-      );
-
-      // Listen for popup completion
-      const checkClosed = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(checkClosed);
-          setIsAuthenticating(false);
-          
-          // Check if user was authenticated
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-              navigate("/dashboard");
-            } else {
-              toast({
-                title: "Authentication Cancelled",
-                description: "Sign-in was cancelled or failed. Please try again.",
-                variant: "destructive",
-              });
-            }
-          });
-        }
-      }, 1000);
-
-      // Timeout after 5 minutes
-      setTimeout(() => {
-        if (!popup?.closed) {
-          popup?.close();
-          clearInterval(checkClosed);
-          setIsAuthenticating(false);
-          toast({
-            title: "Authentication Timeout",
-            description: "Sign-in took too long. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }, 300000);
-
     } catch (error: any) {
       console.error("Sign-in error:", error);
       setIsAuthenticating(false);

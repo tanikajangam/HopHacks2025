@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import { useTheme } from "@/providers/ThemeProvider";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Upload, Database, Shield } from "lucide-react";
+import { Brain, Upload, Database, Shield, Sun, Moon, Monitor } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -20,56 +22,16 @@ const Index = () => {
 
   const signInWithGoogle = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-          skipBrowserRedirect: true // Prevent main tab redirect
         },
       });
 
       if (error) {
         throw error;
       }
-
-      // Open popup for Google auth
-      const popup = window.open(
-        data.url,
-        'google-auth',
-        'width=500,height=600,scrollbars=yes,resizable=yes'
-      );
-
-      // Listen for popup completion
-      const checkClosed = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(checkClosed);
-          
-          // Check if user was authenticated
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-              navigate("/dashboard");
-            }
-          });
-        }
-      }, 1000);
-
-      // Timeout after 5 minutes
-      setTimeout(() => {
-        if (!popup?.closed) {
-          popup?.close();
-          clearInterval(checkClosed);
-          toast({
-            title: "Authentication Timeout",
-            description: "Sign-in took too long. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }, 300000);
-
     } catch (error: any) {
       toast({
         title: "Authentication failed",
@@ -77,6 +39,21 @@ const Index = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case "light": return <Sun className="h-4 w-4" />;
+      case "dark": return <Moon className="h-4 w-4" />;
+      default: return <Monitor className="h-4 w-4" />;
+    }
+  };
+
+  const cycleTheme = () => {
+    const themes = ["light", "dark", "system"] as const;
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
   };
 
   if (loading) {
@@ -92,6 +69,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
+      {/* Theme Toggle Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={cycleTheme}
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        >
+          {getThemeIcon()}
+        </Button>
+      </div>
+      
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
           <div className="flex justify-center mb-8">
