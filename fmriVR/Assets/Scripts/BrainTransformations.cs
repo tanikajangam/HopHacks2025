@@ -22,6 +22,7 @@ public class BrainTransformations : MonoBehaviour
 
     [Range(0.1f, 1f)]
     public float scaleFactor = 0.4f;
+    public const float SCALE_AMT = 0.05f;
 
     void Start()
     {
@@ -38,8 +39,19 @@ public class BrainTransformations : MonoBehaviour
         transform.localScale = Vector3.one * scaleFactor;
     }
 
-    public void UpdateRotation(float xRotationMag, float yRotationMag) {
-        defaultRotationSpeed = new Vector3(-yRotationMag * ROT_AMT, -xRotationMag * ROT_AMT, 0);
+    public void UpdateRotation(float xRotationMag, float yRotationMag)
+    {
+        defaultRotationSpeed = new Vector3(-xRotationMag * ROT_AMT, -yRotationMag * ROT_AMT, 0);
+    }
+
+    public void ZoomIn()
+    {
+        scaleFactor += SCALE_AMT;
+    }
+
+    public void ZoomOut()
+    {
+        scaleFactor -= SCALE_AMT;
     }
     
 }
