@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FMRIVolumeVisualizer : MonoBehaviour
+public class Optimized_FMRIVolumeVisualizer : MonoBehaviour
 {
     [Header("FMRI Data Source")]
     public FMRILoader fmriLoader;

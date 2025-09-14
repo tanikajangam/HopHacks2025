@@ -90,6 +90,8 @@ public class VRInput : MonoBehaviour
                     zoomLevel -= ZOOM_AMT;
                 }
 
+                transformations.ZoomOut();
+
             }
             else
             {
@@ -98,6 +100,7 @@ public class VRInput : MonoBehaviour
                 {
                     zoomLevel += ZOOM_AMT;
                 }
+                transformations.ZoomIn();
             }
 
         }

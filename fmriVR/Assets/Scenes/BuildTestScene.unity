@@ -132,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 109273885}
-  - component: {fileID: 109273886}
   - component: {fileID: 109273887}
   m_Layer: 0
   m_Name: FMRI Volume Visualizer
@@ -156,72 +155,6 @@ Transform:
   m_Father: {fileID: 1211515543}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &109273886
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 109273884}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfb36e013e36feb46973b20a7fa091e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fmriLoader: {fileID: 442724731}
-  findLoaderAutomatically: 1
-  currentTimePoint: 0
-  voxelSize: 1
-  voxelSpacing: 1.1
-  cubePrefab: {fileID: 1980501567}
-  createCubePrefabIfMissing: 1
-  colorSchemes:
-  - name: Grayscale
-    minColor: {r: 0, g: 0, b: 0, a: 1}
-    maxColor: {r: 1, g: 1, b: 1, a: 1}
-    useTransparency: 1
-    minAlpha: 0.1
-    maxAlpha: 0.8
-  - name: Hot
-    minColor: {r: 0, g: 0, b: 0, a: 1}
-    maxColor: {r: 1, g: 0, b: 0, a: 1}
-    useTransparency: 1
-    minAlpha: 0.1
-    maxAlpha: 0.8
-  - name: Cool
-    minColor: {r: 0, g: 0, b: 1, a: 1}
-    maxColor: {r: 0, g: 1, b: 1, a: 1}
-    useTransparency: 1
-    minAlpha: 0.1
-    maxAlpha: 0.8
-  - name: Rainbow
-    minColor: {r: 0, g: 0, b: 1, a: 1}
-    maxColor: {r: 1, g: 0, b: 0, a: 1}
-    useTransparency: 1
-    minAlpha: 0.1
-    maxAlpha: 0.8
-  currentColorSchemeIndex: 0
-  useGlobalMinMax: 1
-  customMinValue: 0
-  customMaxValue: 1
-  updateInRealTime: 1
-  updateInterval: 0.1
-  useLevelOfDetail: 1
-  maxRenderDistance: 50
-  animateTimePoints: 0
-  animationSpeed: 1
-  dataReady: 0
-  globalMinValue: 0
-  globalMaxValue: 0
-  totalCubes: 0
-  visibleCubes: 0
-  xOffset: 0
-  yOffset: 0
-  zOffset: 0
-  chunkSizeX: 4
-  chunkSizeY: 4
-  chunkSizeZ: 4
-  useFullVolume: 0
 --- !u!114 &109273887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -890,7 +823,7 @@ GameObject:
   - component: {fileID: 582185120}
   - component: {fileID: 582185119}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: really long cube for testing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1481,7 +1414,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1230243597
 MonoBehaviour:
   m_ObjectHideFlags: 0
