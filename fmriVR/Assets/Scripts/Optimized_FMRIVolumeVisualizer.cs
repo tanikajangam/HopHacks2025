@@ -409,7 +409,7 @@ public class FMRIVolumeVisualizer : MonoBehaviour
         float shaderMinValue = 0.0f;  // Always 0 since we normalize the texture data
         float shaderMaxValue = 1.0f;  // Always 1 since we normalize the texture data
         
-        Debug.Log($"Setting shader properties - Texture data is normalized to 0-1 range");
+        //Debug.Log($"Setting shader properties - Texture data is normalized to 0-1 range");
         
         // Update shader properties
         volumeMaterialInstance.SetFloat("_StepSize", stepSize);
