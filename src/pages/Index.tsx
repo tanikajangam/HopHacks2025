@@ -53,62 +53,53 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Welcome and features */}
-          <div className="text-center lg:text-left">
-            <div className="flex justify-center lg:justify-start mb-8">
-              <div className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl backdrop-blur-sm">
-                <Brain className="h-16 w-16 text-primary" />
-              </div>
+        <div className="text-center max-w-4xl mx-auto">
+          <div className="flex justify-center mb-8">
+            <div className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl backdrop-blur-sm">
+              <Brain className="h-16 w-16 text-primary" />
+            </div>
+          </div>
+          
+          <h1 className="text-6xl font-bold mb-4">
+            <span className="gradient-text">Welcome</span>
+          </h1>
+          <h2 className="text-4xl font-bold mb-6 text-foreground">
+            to fMRI-VR
+          </h2>
+          
+          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Secure, BIDS-compliant neuroimaging data management platform for researchers. 
+            Upload, organize, and manage your fMRI datasets with ease.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center p-6 rounded-lg bg-card/50 backdrop-blur-sm border">
+              <Upload className="h-8 w-8 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Easy Upload</h3>
+              <p className="text-muted-foreground">
+                Drag and drop your neuroimaging files with automatic BIDS organization
+              </p>
             </div>
             
-            <h1 className="text-6xl font-bold mb-4">
-              <span className="gradient-text">Welcome</span>
-            </h1>
-            <h2 className="text-4xl font-bold mb-6 text-foreground">
-              to fMRI-VR
-            </h2>
+            <div className="text-center p-6 rounded-lg bg-card/50 backdrop-blur-sm border">
+              <Database className="h-8 w-8 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Organized Storage</h3>
+              <p className="text-muted-foreground">
+                Automatic file organization following BIDS standards for reproducible research
+              </p>
+            </div>
             
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
-              Secure, BIDS-compliant neuroimaging data management platform for researchers. 
-              Upload, organize, and manage your fMRI datasets with ease.
-            </p>
-
-            <div className="grid gap-6 mb-8">
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <Upload className="h-6 w-6 text-primary flex-shrink-0" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Easy Upload</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Drag and drop your neuroimaging files with automatic BIDS organization
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <Database className="h-6 w-6 text-primary flex-shrink-0" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Organized Storage</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Automatic file organization following BIDS standards for reproducible research
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <Shield className="h-6 w-6 text-primary flex-shrink-0" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Secure Access</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Google authentication with role-based access control for your research team
-                  </p>
-                </div>
-              </div>
+            <div className="text-center p-6 rounded-lg bg-card/50 backdrop-blur-sm border">
+              <Shield className="h-8 w-8 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Secure Access</h3>
+              <p className="text-muted-foreground">
+                Google authentication with role-based access control for your research team
+              </p>
             </div>
           </div>
 
-          {/* Right side - Auth card */}
-          <div className="flex justify-center">
+          {/* Centered Auth Card */}
+          <div className="flex justify-center mb-8">
             <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-2 border-primary/20 shadow-2xl">
               <CardHeader className="text-center space-y-4">
                 <div className="mx-auto p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl w-fit">

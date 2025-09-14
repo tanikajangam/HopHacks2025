@@ -220,11 +220,11 @@ export const Dashboard = () => {
       <header className="bg-card/50 backdrop-blur-sm border-b border-border/50 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg">
               <Brain className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold">fMRI Portal</h1>
+              <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">fMRI Portal</h1>
               <p className="text-sm text-muted-foreground">
                 Neuroimaging Data Management
               </p>
@@ -234,24 +234,24 @@ export const Dashboard = () => {
           <div className="flex items-center gap-4">
             <Badge
               variant="secondary"
-              className="bg-accent/20 text-accent-foreground"
+              className="bg-accent/20 text-accent-foreground border-accent/30"
             >
               <Activity className="h-3 w-3 mr-1" />
               Online
             </Badge>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm">{displayName}</span>
+              <span className="text-sm text-primary font-medium">{displayName}</span>
 
-              <Button variant="ghost" size="sm" onClick={() => setOpenSettings(true)}>
+              <Button variant="ghost" size="sm" onClick={() => setOpenSettings(true)} className="text-accent hover:text-accent-foreground hover:bg-accent/10">
                 <Settings className="h-4 w-4" />
               </Button>
 
-              <Button variant="ghost" size="sm" onClick={() => setOpenUser(true)}>
+              <Button variant="ghost" size="sm" onClick={() => setOpenUser(true)} className="text-primary hover:text-primary-foreground hover:bg-primary/10">
                 <UserIcon className="h-4 w-4" />
               </Button>
 
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -262,7 +262,7 @@ export const Dashboard = () => {
       <main className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-2xl font-bold mb-2 text-primary">
               Welcome back, Dr. {lastName}
             </h2>
             <p className="text-muted-foreground">
@@ -271,30 +271,30 @@ export const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-primary">
                   Total Datasets
                 </CardTitle>
-                <Database className="h-4 w-4 text-muted-foreground" />
+                <Database className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{activity.length}</div>
+                <div className="text-2xl font-bold text-primary">{activity.length}</div>
                 <p className="text-xs text-muted-foreground">
                   Files uploaded
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-accent">
                   Storage Used
                 </CardTitle>
-                <UploadCloud className="h-4 w-4 text-muted-foreground" />
+                <UploadCloud className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-accent">
                   {(storageUsed / (1024 * 1024)).toFixed(1)} MB
                 </div>
                 <Progress value={(storageUsed / (521 * 1024 * 1024)) * 100} className="mt-2" />
@@ -304,30 +304,30 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-primary">
                   Active Subjects
                 </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{subjectCount}</div>
+                <div className="text-2xl font-bold text-primary">{subjectCount}</div>
                 <p className="text-xs text-muted-foreground">
                   Research participants
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-accent">
                   Compliance Score
                 </CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <FileText className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">98%</div>
+                <div className="text-2xl font-bold text-accent">98%</div>
                 <p className="text-xs text-muted-foreground">BIDS compliant</p>
               </CardContent>
             </Card>
@@ -335,9 +335,9 @@ export const Dashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-primary">
                     <UploadCloud className="h-5 w-5" />
                     Upload fMRI Data
                   </CardTitle>
@@ -353,9 +353,9 @@ export const Dashboard = () => {
             </div>
 
             <div>
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-accent">
                     <Activity className="h-5 w-5" />
                     Recent Activity
                   </CardTitle>
