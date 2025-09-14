@@ -60,12 +60,13 @@ const Index = () => {
             </div>
           </div>
           
-          <h1 className="text-6xl font-bold mb-4">
+          <h1 className="text-7xl md:text-8xl lg:text-9xl font-jacques font-bold mb-8 leading-tight">
             <span className="gradient-text">Welcome</span>
+            <br />
+            <span className="text-foreground">to</span>
+            <br />
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">fMRI-VR</span>
           </h1>
-          <h2 className="text-4xl font-bold mb-6 text-foreground">
-            to fMRI-VR
-          </h2>
           
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
             Secure, BIDS-compliant neuroimaging data management platform for researchers. 

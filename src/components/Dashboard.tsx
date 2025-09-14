@@ -186,29 +186,6 @@ export const Dashboard = () => {
         setActivity(recentActivity);
       } catch (error) {
         console.error('Error fetching storage data:', error);
-        // Fallback to mock data
-        setSubjectCount(3);
-        setStorageUsed(650 * 1024 * 1024 * 1024); // 650GB
-        setActivity([
-          {
-            id: "1",
-            name: `${user.id}/sub-001/func/sub-001_task-rest_bold.nii.gz`,
-            created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-            type: 'upload'
-          },
-          {
-            id: "2", 
-            name: `${user.id}/sub-002/anat/sub-002_T1w.nii.gz`,
-            created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-            type: 'download'
-          },
-          {
-            id: "3",
-            name: `${user.id}/sub-003/func/sub-003_task-motor_bold.nii.gz`,
-            created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-            type: 'delete'
-          }
-        ]);
       }
     };
 
