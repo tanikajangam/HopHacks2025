@@ -3,7 +3,9 @@ guid: bfb36e013e36feb46973b20a7fa091e3
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - fmriLoader: {instanceID: 0}
+  - cubePrefab: {fileID: 7733875955768408218, guid: 2e16046ebcbcb6742a86569d82e56cce, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

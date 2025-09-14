@@ -103,11 +103,6 @@ public class FMRIVolumeVisualizer : MonoBehaviour
 
         // Create container for all cubes
         GameObject container = new GameObject("FMRI_Cube_Container");
-        if (existingContainer != null)
-        {
-            // destroy old container if it already exists (and all its children cubes)
-            DestroyImmediate(existingContainer.gameObject);
-        }
 
         container.transform.SetParent(parent.transform);
         //container.transform.parent = transform;
