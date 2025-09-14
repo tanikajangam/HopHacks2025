@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Optimized_FMRIVolumeVisualizer : MonoBehaviour
+public class FMRIVolumeVisualizer : MonoBehaviour
 {
     [Header("FMRI Data Source")]
     public FMRILoader fmriLoader;
@@ -294,140 +294,107 @@ public class Optimized_FMRIVolumeVisualizer : MonoBehaviour
             DestroyImmediate(volumeTexture);
         }
         
-        // Create 3D texture
-        volumeTexture = new Texture3D(renderSizeX, renderSizeY, renderSizeZ, TextureFormat.RFloat, false);
+        // Try different formats in order of preference for Quest 2
+        TextureFormat[] formatsToTry = {
+            TextureFormat.RGBA32,     // Most compatible
+            TextureFormat.RHalf,      // Half precision float
+            TextureFormat.RFloat      // Full precision (may not work on Quest 2)
+        };
+        
+        TextureFormat selectedFormat = TextureFormat.RGBA32;
+        
+        // Test which formats are supported
+        foreach (TextureFormat format in formatsToTry)
+        {
+            if (SystemInfo.SupportsTextureFormat(format))
+            {
+                selectedFormat = format;
+                Debug.Log($"Selected texture format: {selectedFormat}");
+                break;
+            }
+        }
+        
+        // Create 3D texture with compatible format
+        volumeTexture = new Texture3D(renderSizeX, renderSizeY, renderSizeZ, selectedFormat, false);
         volumeTexture.name = "FMRI_Volume_Texture";
         volumeTexture.filterMode = FilterMode.Trilinear;
         volumeTexture.wrapMode = TextureWrapMode.Clamp;
         
-        Debug.Log($"Created 3D texture: {renderSizeX}x{renderSizeY}x{renderSizeZ}");
+        Debug.Log($"Created 3D texture: {renderSizeX}x{renderSizeY}x{renderSizeZ} format: {selectedFormat}");
         yield return null;
     }
     
     IEnumerator UpdateVolumeTexture()
+{
+    if (volumeTexture == null || !dataReady) yield break;
+    
+    currentTimePoint = Mathf.Clamp(currentTimePoint, 0, fmriLoader.timePoints - 1);
+    
+    // Create color array for the texture
+    Color[] colors = new Color[renderSizeX * renderSizeY * renderSizeZ];
+    int index = 0;
+    
+    // Get normalization parameters
+    float minVal = useGlobalMinMax ? globalMinValue : customMinValue;
+    float maxVal = useGlobalMinMax ? globalMaxValue : customMaxValue;
+    float range = maxVal - minVal;
+    
+    Debug.Log($"=== FMRI Data Debug - Time Point {currentTimePoint} ===");
+    Debug.Log($"Normalization range: {minVal:F6} to {maxVal:F6} (span: {range:F6})");
+    
+    // Fill texture with current time point data
+    for (int z = 0; z < renderSizeZ; z++)
     {
-        if (volumeTexture == null || !dataReady) yield break;
-        
-        currentTimePoint = Mathf.Clamp(currentTimePoint, 0, fmriLoader.timePoints - 1);
-        
-        // Create color array for the texture
-        Color[] colors = new Color[renderSizeX * renderSizeY * renderSizeZ];
-        int index = 0;
-        
-        // Get normalization parameters
-        float minVal = useGlobalMinMax ? globalMinValue : customMinValue;
-        float maxVal = useGlobalMinMax ? globalMaxValue : customMaxValue;
-        float range = maxVal - minVal;
-        
-        // DEBUG: Track actual data statistics
-        float actualMin = float.MaxValue;
-        float actualMax = float.MinValue;
-        float sum = 0f;
-        int validCount = 0;
-        List<float> sampleValues = new List<float>();
-        List<float> normalizedSamples = new List<float>();
-        
-        Debug.Log($"=== FMRI Data Debug - Time Point {currentTimePoint} ===");
-        Debug.Log($"Normalization range: {minVal:F6} to {maxVal:F6} (span: {range:F6})");
-        
-        // Fill texture with current time point data
-        for (int z = 0; z < renderSizeZ; z++)
+        for (int y = 0; y < renderSizeY; y++)
         {
-            for (int y = 0; y < renderSizeY; y++)
+            for (int x = 0; x < renderSizeX; x++)
             {
-                for (int x = 0; x < renderSizeX; x++)
+                // Get voxel value (convert from relative to absolute coordinates)
+                float rawValue = fmriLoader.GetVoxelValue(currentTimePoint, 
+                    x + renderStartX, y + renderStartY, z + renderStartZ);
+                
+                // NORMALIZE the value to 0-1 range before storing in texture
+                float normalizedValue = 0f;
+                if (range > 0.000001f && !float.IsNaN(rawValue) && !float.IsInfinity(rawValue))
                 {
-                    // Get voxel value (convert from relative to absolute coordinates)
-                    float rawValue = fmriLoader.GetVoxelValue(currentTimePoint, 
-                        x + renderStartX, y + renderStartY, z + renderStartZ);
-                    
-                    // DEBUG: Collect raw statistics
-                    if (!float.IsNaN(rawValue) && !float.IsInfinity(rawValue))
-                    {
-                        actualMin = Mathf.Min(actualMin, rawValue);
-                        actualMax = Mathf.Max(actualMax, rawValue);
-                        sum += rawValue;
-                        validCount++;
-                        
-                        if (sampleValues.Count < 20)
-                            sampleValues.Add(rawValue);
-                    }
-                    
-                    // NORMALIZE the value to 0-1 range before storing in texture
-                    float normalizedValue = 0f;
-                    if (range > 0.000001f && !float.IsNaN(rawValue) && !float.IsInfinity(rawValue))
-                    {
-                        normalizedValue = Mathf.Clamp01((rawValue - minVal) / range);
-                    }
-                    
-                    // Collect normalized samples for debugging
-                    if (normalizedSamples.Count < 20)
-                        normalizedSamples.Add(normalizedValue);
-                    
-                    // Store NORMALIZED value in red channel (shader expects 0-1 range)
-                    colors[index] = new Color(normalizedValue, 0, 0, 1);
-                    index++;
+                    normalizedValue = Mathf.Clamp01((rawValue - minVal) / range);
                 }
-            }
-            
-            // Yield periodically to prevent freezing
-            if (z % 2 == 0) yield return null;
-        }
-        
-        // DEBUG: Print comprehensive statistics
-        Debug.Log($"Raw data range this timepoint: {actualMin:F6} to {actualMax:F6}");
-        Debug.Log($"Global range (all timepoints): {globalMinValue:F6} to {globalMaxValue:F6}");
-        Debug.Log($"Average raw value: {(sum / validCount):F6}");
-        Debug.Log($"Valid voxel count: {validCount} / {colors.Length}");
-        
-        // Print raw sample values
-        string rawSampleStr = "Raw samples: ";
-        foreach (float val in sampleValues)
-            rawSampleStr += $"{val:F1}, ";
-        Debug.Log(rawSampleStr);
-        
-        // Print normalized sample values  
-        string normSampleStr = "Normalized samples: ";
-        foreach (float val in normalizedSamples)
-            normSampleStr += $"{val:F3}, ";
-        Debug.Log(normSampleStr);
-        
-        // Check for proper normalization - calculate min/max manually
-        float normMin = 1f;
-        float normMax = 0f;
-        if (normalizedSamples.Count > 0)
-        {
-            foreach (float val in normalizedSamples)
-            {
-                if (val < normMin) normMin = val;
-                if (val > normMax) normMax = val;
+                
+                // Store value based on texture format
+                if (volumeTexture.format == TextureFormat.RGBA32)
+                {
+                    // Store in red channel, set alpha to 1 for visibility
+                    colors[index] = new Color(normalizedValue, 0, 0, 1);
+                }
+                else if (volumeTexture.format == TextureFormat.RHalf || volumeTexture.format == TextureFormat.RFloat)
+                {
+                    // Store in red channel only
+                    colors[index] = new Color(normalizedValue, 0, 0, 1);
+                }
+                
+                index++;
             }
         }
-        else
-        {
-            normMin = 0f;
-            normMax = 0f;
-        }
         
-        Debug.Log($"Normalized range in texture: {normMin:F3} to {normMax:F3}");
-        
-        if (normMax - normMin < 0.01f)
-        {
-            Debug.LogWarning("Very little variation in normalized data - check if global min/max calculation is correct!");
-        }
-        
-        // Apply the color data to the texture
-        volumeTexture.SetPixels(colors);
-        volumeTexture.Apply();
-        
-        // Set texture on material
-        if (volumeMaterialInstance != null)
-        {
-            volumeMaterialInstance.SetTexture("_VolumeTexture", volumeTexture);
-        }
-        
-        Debug.Log($"Updated volume texture for time point {currentTimePoint}");
+        // Yield periodically to prevent freezing
+        if (z % 2 == 0) yield return null;
     }
+    
+    // Apply the color data to the texture
+    volumeTexture.SetPixels(colors);
+    volumeTexture.Apply();
+    
+    // Set texture on material
+    if (volumeMaterialInstance != null)
+    {
+        volumeMaterialInstance.SetTexture("_VolumeTexture", volumeTexture);
+        
+        // CRITICAL: Force material update
+        volumeMaterialInstance.EnableKeyword("_VOLUMETEXTURE_ENABLED");
+    }
+    
+    Debug.Log($"Updated volume texture for time point {currentTimePoint} with format {volumeTexture.format}");
+}
     
     
     void UpdateShaderProperties()
