@@ -284,30 +284,30 @@ export const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">
+                <CardTitle className="text-sm font-medium">
                   Total Datasets
                 </CardTitle>
                 <Database className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{activity.length}</div>
+                <div className="text-2xl font-bold">{activity.length}</div>
                 <p className="text-xs text-muted-foreground">
                   Files uploaded
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-accent">
+                <CardTitle className="text-sm font-medium">
                   Storage Used
                 </CardTitle>
                 <UploadCloud className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-accent">
+                <div className="text-2xl font-bold">
                   {(storageUsed / (1024 * 1024)).toFixed(1)} MB
                 </div>
                 <Progress value={(storageUsed / (521 * 1024 * 1024)) * 100} className="mt-2" />
@@ -317,30 +317,30 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-primary">
+                <CardTitle className="text-sm font-medium">
                   Active Subjects
                 </CardTitle>
                 <Users className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{subjectCount}</div>
+                <div className="text-2xl font-bold">{subjectCount}</div>
                 <p className="text-xs text-muted-foreground">
                   Research participants
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-accent">
+                <CardTitle className="text-sm font-medium">
                   Compliance Score
                 </CardTitle>
                 <FileText className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-accent">98%</div>
+                <div className="text-2xl font-bold">98%</div>
                 <p className="text-xs text-muted-foreground">BIDS compliant</p>
               </CardContent>
             </Card>
@@ -348,10 +348,10 @@ export const Dashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-primary/20">
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <UploadCloud className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2">
+                    <UploadCloud className="h-5 w-5 text-primary" />
                     Upload fMRI Data
                   </CardTitle>
                   <CardDescription>
@@ -366,10 +366,10 @@ export const Dashboard = () => {
             </div>
 
             <div>
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50 border-accent/20">
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-accent">
-                    <Activity className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-accent" />
                     Recent Activity
                   </CardTitle>
                 </CardHeader>
